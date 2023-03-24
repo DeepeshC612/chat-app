@@ -1,3 +1,4 @@
+const { Op } = require("sequelize");
 const addressSchema = require("../models/addressModels");
 const userSchema = require("../models/userModel");
 
@@ -30,6 +31,41 @@ const addAddress = async (req, res) => {
   }
 };
 
+const searchAndFilter = async (req, res) => {
+  try {
+    let country = req.query.country;
+    let city = req.query.city
+    const first = country
+      ? { country: { [Op.like]: `%${country}%` } }
+      : null;
+    const second = city
+    ? { city: { [Op.like]: `%${city}%` } }
+    : null;
+    const search = await addressSchema.findAll({
+      where: {
+        [Op.or]:[first,second]
+      },
+      include: [
+        {
+          model: userSchema,
+          as: "add",
+        },
+      ],
+    });
+    res.status(200).json({
+      success: true,
+      message: "Address fetch successfully",
+      data: search,
+    });
+  } catch (err) {
+    res.status(400).json({
+      success: false,
+      error: "Error occur " + err.message,
+    });
+  }
+};
+
 module.exports = {
-    addAddress
-}
+  addAddress,
+  searchAndFilter,
+};
