@@ -7,5 +7,10 @@ Router.post(
     upload.single("profilePic"),
     user.signUp
 );
+Router.post(
+    "/login",
+    user.logIn
+);
+
 
 module.exports = Router
