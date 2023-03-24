@@ -45,12 +45,13 @@ const changeDefaultAddress = async (req, res) => {
           where: { id: addressId },
         }
       );
-      const productImage = await userSchema.update(previousDefaultAddress, {
+      await userSchema.update(previousDefaultAddress, {
         where: { id: userId },
       });
       res.status(200).json({
         success: true,
         message: "Default address update successfully",
+        data: updateIsDefaultAddress
       });
     } else {
       res.status(404).json({
