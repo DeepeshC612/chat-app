@@ -4,6 +4,6 @@ const auth = require("../middlewares/authMiddleware");
 
 Router.post("/", auth.authenticate, address.addAddress);
 Router.get("/search", address.searchAndFilter);
-Router.patch("/default", address.changeDefaultAddress);
+Router.patch("/default/:id", auth.authenticate, address.changeDefaultAddress);
 
 module.exports = Router;

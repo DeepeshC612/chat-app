@@ -5,15 +5,18 @@ const addressSchema = require("../models/addressModels");
 
 const addAddress = async (req, res) => {
   try {
-    const address = new addressSchema(req.body);
-    const isDefaultAddress = await addressSchema.findOne({where: {UserId: req.userID}})
-    if(isDefaultAddress){
-      address.UserId = req.userID;
-      await address.save();
+    const isDefaultAddress = await addressSchema.findOne({
+      where: { UserId: req.userID },
+    });
+    if (isDefaultAddress) {
+      const UserId = req.userID;
+      let addressData = { ...req.body, UserId: UserId };
+      await addressSchema.create(addressData);
     } else {
-      address.UserId = req.userID
-      address.isDefault = true
-      await address.save()
+      const UserId = req.userID;
+      const isDefault = true;
+      let addressData = { ...req.body, UserId: UserId, isDefault: isDefault };
+      await addressSchema.create(addressData);
     }
     const newAddress = await addressSchema.findAll({
       include: [
@@ -39,7 +42,23 @@ const addAddress = async (req, res) => {
 
 const changeDefaultAddress = async (req, res) => {
   try {
-    
+    const isUserExist = await addressSchema.findOne({
+      where: { UserId: req.userID },
+    });
+    if (isUserExist) {
+      const previousDefaultAddress = await addressSchema.update(
+        { isDefault: false },
+        { where: { id: isUserExist.id } }
+      );
+      const updateDefaultAddress = await addressSchema.update(
+        { isDefault: true },
+        { where: { id: req.params.id } }
+      );
+      res.status(202).json({
+        success: true,
+        message: "Default address set successfully",
+      });
+    }
   } catch (err) {
     res.status(400).json({
       success: false,
@@ -62,6 +81,7 @@ const searchAndFilter = async (req, res) => {
         {
           model: userSchema,
           as: "add",
+          attributes: ["firstName"]
         },
       ],
     });
