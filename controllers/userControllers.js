@@ -37,7 +37,7 @@ const signUp = async (req, res) => {
 const logIn = async (req, res) => {
   try {
     const { email, password } = req.body;
-    const isUserExist = await userSchema.findOne({ email: email });
+    const isUserExist = await userSchema.findOne({ where: { email: email } });
     if (isUserExist) {
       const pass = await bcrypt.compare(password, isUserExist.password);
       if (pass) {
@@ -78,5 +78,5 @@ const logIn = async (req, res) => {
 
 module.exports = {
   signUp,
-  logIn
+  logIn,
 };

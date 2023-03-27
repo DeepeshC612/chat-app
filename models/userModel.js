@@ -42,4 +42,4 @@ Address.belongsTo(User, {
 });
 sequelize.sync();
 
-module.exports = User;
+module.exports = User

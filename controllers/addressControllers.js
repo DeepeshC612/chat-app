@@ -1,13 +1,13 @@
 const { Op } = require("sequelize");
-const addressSchema = require("../models/addressModels");
+const sequelize = require("sequelize");
 const userSchema = require("../models/userModel");
+const addressSchema = require("../models/addressModels");
 
 const addAddress = async (req, res) => {
   try {
-    const id = req.params.id;
     const address = new addressSchema(req.body);
     address.isDefault = req.body.address;
-    address.UserId = id;
+    address.UserId = req.userID;
     await address.save();
     const newAddress = await addressSchema.findAll({
       include: [
@@ -16,7 +16,7 @@ const addAddress = async (req, res) => {
           as: "add",
         },
       ],
-      where: {UserId: id}
+      where: { UserId: req.userID },
     });
     res.status(201).json({
       success: true,
@@ -48,10 +48,9 @@ const changeDefaultAddress = async (req, res) => {
       await userSchema.update(previousDefaultAddress, {
         where: { id: userId },
       });
-      res.status(200).json({
+      res.status(202).json({
         success: true,
         message: "Default address update successfully",
-        data: updateIsDefaultAddress
       });
     } else {
       res.status(404).json({
@@ -100,5 +99,5 @@ const searchAndFilter = async (req, res) => {
 module.exports = {
   addAddress,
   searchAndFilter,
-  changeDefaultAddress
+  changeDefaultAddress,
 };
