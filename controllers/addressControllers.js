@@ -1,27 +1,26 @@
 const { Op } = require("sequelize");
-const sequelize = require("sequelize");
-const userSchema = require("../models/userModel");
-const addressSchema = require("../models/addressModels");
+const User = require("../models/userModel");
+const Address = require("../models/addressModels");
 
 const addAddress = async (req, res) => {
   try {
-    const isDefaultAddress = await addressSchema.findOne({
+    const isDefaultAddress = await Address.findOne({
       where: { UserId: req.userID },
     });
     if (isDefaultAddress) {
       const UserId = req.userID;
       let addressData = { ...req.body, UserId: UserId };
-      await addressSchema.create(addressData);
+      await Address.create(addressData);
     } else {
       const UserId = req.userID;
       const isDefault = true;
       let addressData = { ...req.body, UserId: UserId, isDefault: isDefault };
-      await addressSchema.create(addressData);
+      await Address.create(addressData);
     }
-    const newAddress = await addressSchema.findAll({
+    const newAddress = await Address.findAll({
       include: [
         {
-          model: userSchema,
+          model: User,
           as: "add",
         },
       ],
@@ -30,7 +29,7 @@ const addAddress = async (req, res) => {
     res.status(201).json({
       success: true,
       message: "Address created successfully",
-      address: newAddress,
+      Address: newAddress,
     });
   } catch (err) {
     res.status(400).json({
@@ -42,20 +41,20 @@ const addAddress = async (req, res) => {
 
 const changeDefaultAddress = async (req, res) => {
   try {
-    const isUserExist = await addressSchema.update(
+    const isUserExist = await Address.update(
       { isDefault: false },
       {
         where: { UserId: req.userID, isDefault: true },
       }
     );
     if (isUserExist) {
-      await addressSchema.update(
+      await Address.update(
         { isDefault: true },
         { where: { id: req.params.id } }
       );
       res.status(202).json({
         success: true,
-        message: "Default address set successfully",
+        message: "Default Address set successfully",
       });
     }
   } catch (err) {
@@ -78,7 +77,7 @@ const searchAndFilter = async (req, res) => {
     limit = limit < 0 ? 10 : limit;
     const offset = page * limit;
     const pageSize = limit;
-    const addressList = await addressSchema.findAndCountAll({
+    const addressList = await Address.findAndCountAll({
       limit: pageSize,
       offset: offset,
       where: {
@@ -86,7 +85,7 @@ const searchAndFilter = async (req, res) => {
       },
       include: [
         {
-          model: userSchema,
+          model: User,
           as: "add",
           attributes: ["firstName"],
         },
@@ -118,14 +117,14 @@ const listAllAddress = async (req, res) => {
     limit = limit < 0 ? 10 : limit;
     const offset = page * limit;
     const pageSize = limit;
-    const allAddress = await addressSchema.findAll({
+    const allAddress = await Address.findAndCountAll({
       limit: pageSize,
       offset: offset,
       include: [
         {
-          model: userSchema,
+          model: User,
           as: "add",
-          attributes: ["firstName"],
+          attributes: ["firstName", "email"],
         },
       ],
     });

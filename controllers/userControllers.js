@@ -1,12 +1,12 @@
-const userSchema = require("../models/userModel");
+const User = require("../models/userModel");
 const bcrypt = require("bcrypt");
 require("dotenv").config();
 const jwt = require("jsonwebtoken");
 
 const signUp = async (req, res) => {
   try {
-    const regData = await new userSchema(req.body);
-    const isUserExist = await userSchema.findOne({
+    const regData = await new User(req.body);
+    const isUserExist = await User.findOne({
       where: { email: req.body.email },
     });
     if (isUserExist) {
@@ -37,7 +37,7 @@ const signUp = async (req, res) => {
 const logIn = async (req, res) => {
   try {
     const { email, password } = req.body;
-    const isUserExist = await userSchema.findOne({ where: { email: email } });
+    const isUserExist = await User.findOne({ where: { email: email } });
     if (isUserExist) {
       const pass = await bcrypt.compare(password, isUserExist.password);
       if (pass) {
