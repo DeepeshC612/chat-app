@@ -3,7 +3,8 @@ const address = require("../controllers/addressControllers");
 const auth = require("../middlewares/authMiddleware");
 
 Router.post("/", auth.authenticate, address.addAddress);
-Router.get("/search", address.searchAndFilter);
+Router.get("/search", auth.authenticate, address.searchAndFilter);
+Router.get("/list", auth.authenticate, address.listAllAddress);
 Router.patch("/default/:id", auth.authenticate, address.changeDefaultAddress);
 
 module.exports = Router;

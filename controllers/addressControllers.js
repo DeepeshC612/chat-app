@@ -42,15 +42,14 @@ const addAddress = async (req, res) => {
 
 const changeDefaultAddress = async (req, res) => {
   try {
-    const isUserExist = await addressSchema.findOne({
-      where: { UserId: req.userID },
-    });
+    const isUserExist = await addressSchema.update(
+      { isDefault: false },
+      {
+        where: { UserId: req.userID, isDefault: true },
+      }
+    );
     if (isUserExist) {
-      const previousDefaultAddress = await addressSchema.update(
-        { isDefault: false },
-        { where: { id: isUserExist.id } }
-      );
-      const updateDefaultAddress = await addressSchema.update(
+      await addressSchema.update(
         { isDefault: true },
         { where: { id: req.params.id } }
       );
@@ -83,7 +82,7 @@ const searchAndFilter = async (req, res) => {
       limit: pageSize,
       offset: offset,
       where: {
-        [Op.or]: [conditionForCountry, conditionForCity],
+        [Op.and]: [conditionForCity, conditionForCountry],
       },
       include: [
         {
@@ -111,8 +110,41 @@ const searchAndFilter = async (req, res) => {
   }
 };
 
+const listAllAddress = async (req, res) => {
+  try {
+    let page = req.query.page ? req.query.page - 1 : 0;
+    page = page < 0 ? 0 : page;
+    let limit = parseInt(req.query.limit || 10);
+    limit = limit < 0 ? 10 : limit;
+    const offset = page * limit;
+    const pageSize = limit;
+    const allAddress = await addressSchema.findAll({
+      limit: pageSize,
+      offset: offset,
+      include: [
+        {
+          model: userSchema,
+          as: "add",
+          attributes: ["firstName"],
+        },
+      ],
+    });
+    res.status(200).json({
+      message: true,
+      message: "Address fetch successfully",
+      address: allAddress,
+      meta: {
+        total_pages: Math.round(allAddress.count / pageSize),
+        per_page_items: pageSize,
+        total_items: allAddress.count,
+      },
+    });
+  } catch (err) {}
+};
+
 module.exports = {
   addAddress,
   searchAndFilter,
   changeDefaultAddress,
+  listAllAddress,
 };
