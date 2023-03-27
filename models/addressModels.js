@@ -7,8 +7,9 @@ const Address = sequelize.define("address", {
     allowNull: false,
   },
   isDefault: {
-    type: DataTypes.STRING,
-    allowNull: true,
+    type: DataTypes.BOOLEAN,
+    allowNull: false,
+    defaultValue: false
   },
   city: {
     type: DataTypes.STRING,

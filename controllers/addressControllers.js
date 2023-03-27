@@ -6,9 +6,15 @@ const addressSchema = require("../models/addressModels");
 const addAddress = async (req, res) => {
   try {
     const address = new addressSchema(req.body);
-    address.isDefault = req.body.address;
-    address.UserId = req.userID;
-    await address.save();
+    const isDefaultAddress = await addressSchema.findOne({where: {UserId: req.userID}})
+    if(isDefaultAddress){
+      address.UserId = req.userID;
+      await address.save();
+    } else {
+      address.UserId = req.userID
+      address.isDefault = true
+      await address.save()
+    }
     const newAddress = await addressSchema.findAll({
       include: [
         {
@@ -33,31 +39,7 @@ const addAddress = async (req, res) => {
 
 const changeDefaultAddress = async (req, res) => {
   try {
-    const addressId = req.query.add;
-    const userId = req.query.user;
-    const isAddressExist = await addressSchema.findByPk(addressId);
-    const isUserExist = await userSchema.findByPk(userId);
-    if (isAddressExist && isUserExist) {
-      const previousDefaultAddress = { address: isAddressExist.isDefault };
-      const updateIsDefaultAddress = await addressSchema.update(
-        { isDefault: req.body.address },
-        {
-          where: { id: addressId },
-        }
-      );
-      await userSchema.update(previousDefaultAddress, {
-        where: { id: userId },
-      });
-      res.status(202).json({
-        success: true,
-        message: "Default address update successfully",
-      });
-    } else {
-      res.status(404).json({
-        success: false,
-        message: "address not found",
-      });
-    }
+    
   } catch (err) {
     res.status(400).json({
       success: false,
