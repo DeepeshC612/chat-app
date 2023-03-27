@@ -71,24 +71,37 @@ const searchAndFilter = async (req, res) => {
   try {
     let country = req.query.country;
     let city = req.query.city;
-    const first = country ? { country: { [Op.like]: `%${country}%` } } : null;
-    const second = city ? { city: { [Op.like]: `%${city}%` } } : null;
-    const search = await addressSchema.findAll({
+    const conditionForCountry = { country: { [Op.like]: `%${country}%` } };
+    const conditionForCity = { city: { [Op.like]: `%${city}%` } };
+    let page = req.query.page ? req.query.page - 1 : 0;
+    page = page < 0 ? 0 : page;
+    let limit = parseInt(req.query.limit || 10);
+    limit = limit < 0 ? 10 : limit;
+    const offset = page * limit;
+    const pageSize = limit;
+    const addressList = await addressSchema.findAndCountAll({
+      limit: pageSize,
+      offset: offset,
       where: {
-        [Op.or]: [first, second],
+        [Op.or]: [conditionForCountry, conditionForCity],
       },
       include: [
         {
           model: userSchema,
           as: "add",
-          attributes: ["firstName"]
+          attributes: ["firstName"],
         },
       ],
     });
     res.status(200).json({
-      success: true,
+      message: true,
       message: "Address fetch successfully",
-      data: search,
+      address: addressList,
+      meta: {
+        total_pages: Math.round(addressList.count / pageSize),
+        per_page_items: pageSize,
+        total_items: addressList.count,
+      },
     });
   } catch (err) {
     res.status(400).json({
