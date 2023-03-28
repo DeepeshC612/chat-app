@@ -58,10 +58,10 @@ const isUserLogin = async (req, res, next) => {
 };
 
 const isAdmin = async (req, res, next) => {
-  let userRole = req.body.userRole
-  if (userRole) {
-    if (userRole === 'admin') {
-      next()
+  const isAdminExists = await user.findOne({ where: { id: req.userID } });
+  if (isAdminExists) {
+    if (isAdminExists.userRole === "admin") {
+      next();
     } else {
       res.status(401).json({
         message: "You are not authorized",
@@ -75,10 +75,12 @@ const isAdmin = async (req, res, next) => {
 };
 
 const isAdminLogin = async (req, res, next) => {
-  const isAdminExists = await user.findOne({ where: { email: req.body.email } });
+  const isAdminExists = await user.findOne({
+    where: { email: req.body.email },
+  });
   if (isAdminExists) {
-    if (isAdminExists.userRole === 'admin') {
-      next()
+    if (isAdminExists.userRole === "admin") {
+      next();
     } else {
       res.status(401).json({
         message: "You are not authorized",
@@ -96,5 +98,5 @@ module.exports = {
   isUser,
   isUserLogin,
   isAdmin,
-  isAdminLogin
+  isAdminLogin,
 };

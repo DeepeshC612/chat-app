@@ -110,42 +110,8 @@ const searchAndFilter = async (req, res) => {
   }
 };
 
-const listAllAddress = async (req, res) => {
-  try {
-    let page = req.query.page ? req.query.page - 1 : 0;
-    page = page < 0 ? 0 : page;
-    let limit = parseInt(req.query.limit || 10);
-    limit = limit < 0 ? 10 : limit;
-    const offset = page * limit;
-    const pageSize = limit;
-    const allAddress = await Address.findAndCountAll({
-      limit: pageSize,
-      offset: offset,
-      attributes: ["id", "address", "city", "country", "isDefault"],
-      include: [
-        {
-          model: User,
-          as: "add",
-          attributes: ["firstName", "email"],
-        },
-      ],
-    });
-    res.status(200).json({
-      message: true,
-      message: "Address fetch successfully",
-      address: allAddress,
-      meta: {
-        total_pages: Math.round(allAddress.count / pageSize),
-        per_page_items: pageSize,
-        total_items: allAddress.count,
-      },
-    });
-  } catch (err) {}
-};
-
 module.exports = {
   addAddress,
   searchAndFilter,
   changeDefaultAddress,
-  listAllAddress,
 };

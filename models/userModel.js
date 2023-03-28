@@ -42,7 +42,7 @@ const User = sequelize.define("User", {
 User.hasMany(Address);
 Address.belongsTo(User, {
   foreignKey: "UserId",
-  as: "Address",
+  as: "userAddress",
 });
 sequelize.sync();
 
