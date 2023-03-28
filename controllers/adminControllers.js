@@ -2,6 +2,8 @@ const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const Address = require("../models/addressModels");
 const Admin = require("../models/userModel");
+const sequelize = require("sequelize");
+const { DATE } = require("sequelize");
 
 const adminLogin = async (req, res) => {
   try {
@@ -102,8 +104,56 @@ const listAllAddress = async (req, res) => {
   }
 };
 
+const filterByDate = async (req, res) => {
+  try {
+    let createdAtDate = await Address.min("createdAt");
+    let page = req.query.page ? req.query.page - 1 : 0;
+    page = page < 0 ? 0 : page;
+    let limit = parseInt(req.query.limit || 10);
+    limit = limit < 0 ? 10 : limit;
+    const offset = page * limit;
+    const pageSize = limit;
+    const addressList = await Address.findAndCountAll({
+      limit: pageSize,
+      offset: offset,
+      attributes: { exclude: "updatedAt" },
+      where: {
+        createdAt: {
+          [sequelize.Op.and]: {
+            [sequelize.Op.gt]: createdAtDate,
+            [sequelize.Op.lt]: Date.now(),
+          },
+        },
+      },
+      include: [
+        {
+          model: Admin,
+          as: "userAddress",
+          attributes: ["firstName"],
+        },
+      ],
+    });
+    res.status(200).json({
+      message: true,
+      message: "Address fetch successfully",
+      address: addressList,
+      meta: {
+        total_pages: Math.round(addressList.count / pageSize),
+        per_page_items: pageSize,
+        total_items: addressList.count,
+      },
+    });
+  } catch (err) {
+    res.status(400).json({
+      success: false,
+      error: "Error occur " + err.message,
+    });
+  }
+};
+
 module.exports = {
   adminLogin,
   listAllAddress,
-  removeAddress
+  removeAddress,
+  filterByDate,
 };
