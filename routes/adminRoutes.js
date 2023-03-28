@@ -19,11 +19,5 @@ Router.delete(
     auth.isAdmin,
     admin.removeAddress
 );
-Router.get(
-    "/filterByDate", 
-    auth.authenticate,
-    auth.isAdmin, 
-    admin.filterByDate
-);
 
 module.exports = Router;

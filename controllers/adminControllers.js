@@ -49,14 +49,24 @@ const adminLogin = async (req, res) => {
 
 const removeAddress = async (req, res) => {
   try {
-    const deleteAddress = await Address.destroy({
+    const isDefaultAddress = await Address.findOne({
       where: { id: req.params.id },
     });
-    if (deleteAddress) {
-      res.status(200).json({
-        success: true,
-        message: "Address removed",
+    if (isDefaultAddress.isDefault === true) {
+      res.status(401).json({
+        success: false,
+        message: "You can't delete default address",
       });
+    } else {
+      const deleteAddress = await Address.destroy({
+        where: { id: req.params.id },
+      });
+      if (deleteAddress) {
+        res.status(200).json({
+          success: true,
+          message: "Address removed",
+        });
+      }
     }
   } catch (err) {
     res.status(400).json({
@@ -68,6 +78,12 @@ const removeAddress = async (req, res) => {
 
 const listAllAddress = async (req, res) => {
   try {
+    let country = req.query.country;
+    let city = req.query.city;
+    let createdAtDate = await Address.min("createdAt");
+    let ltNowDate = new Date();
+    const conditionForCountry = { country: { [sequelize.Op.like]: `%${country}%` } };
+    const conditionForCity = { city: { [sequelize.Op.like]: `%${city}%` } };
     let page = req.query.page ? req.query.page - 1 : 0;
     page = page < 0 ? 0 : page;
     let limit = parseInt(req.query.limit || 10);
@@ -77,7 +93,25 @@ const listAllAddress = async (req, res) => {
     const allAddress = await Address.findAndCountAll({
       limit: pageSize,
       offset: offset,
-      attributes: ["id", "address", "city", "country", "isDefault"],
+      attributes: { exclude: "updatedAt" },
+      where: {
+        [sequelize.Op.and]: [
+          {
+            [sequelize.Op.and]: [conditionForCity, conditionForCountry],
+          },
+          {
+            createdAt: {
+              [sequelize.Op.and]: [
+                {
+                  [sequelize.Op.gte]: createdAtDate,
+                  [sequelize.Op.lt]: ltNowDate,
+                },
+              ],
+            },
+          },
+        ],
+      },
+      order: [["createdAt", "ASC"]],
       include: [
         {
           model: Admin,
@@ -104,56 +138,8 @@ const listAllAddress = async (req, res) => {
   }
 };
 
-const filterByDate = async (req, res) => {
-  try {
-    let createdAtDate = await Address.min("createdAt");
-    let page = req.query.page ? req.query.page - 1 : 0;
-    page = page < 0 ? 0 : page;
-    let limit = parseInt(req.query.limit || 10);
-    limit = limit < 0 ? 10 : limit;
-    const offset = page * limit;
-    const pageSize = limit;
-    const addressList = await Address.findAndCountAll({
-      limit: pageSize,
-      offset: offset,
-      attributes: { exclude: "updatedAt" },
-      where: {
-        createdAt: {
-          [sequelize.Op.and]: {
-            [sequelize.Op.gt]: createdAtDate,
-            [sequelize.Op.lt]: Date.now(),
-          },
-        },
-      },
-      include: [
-        {
-          model: Admin,
-          as: "userAddress",
-          attributes: ["firstName"],
-        },
-      ],
-    });
-    res.status(200).json({
-      message: true,
-      message: "Address fetch successfully",
-      address: addressList,
-      meta: {
-        total_pages: Math.round(addressList.count / pageSize),
-        per_page_items: pageSize,
-        total_items: addressList.count,
-      },
-    });
-  } catch (err) {
-    res.status(400).json({
-      success: false,
-      error: "Error occur " + err.message,
-    });
-  }
-};
-
 module.exports = {
   adminLogin,
   listAllAddress,
   removeAddress,
-  filterByDate,
 };
