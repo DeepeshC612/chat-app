@@ -21,7 +21,7 @@ const addAddress = async (req, res) => {
       include: [
         {
           model: User,
-          as: "add",
+          as: "userAddress",
         },
       ],
       where: { UserId: req.userID },
@@ -87,7 +87,7 @@ const searchAndFilter = async (req, res) => {
       include: [
         {
           model: User,
-          as: "add",
+          as: "userAddress",
           attributes: ["firstName"],
         },
       ],

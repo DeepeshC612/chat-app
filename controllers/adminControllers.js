@@ -1,8 +1,7 @@
 const bcrypt = require("bcrypt");
-const jwt = require('jsonwebtoken')
-const Address = require('../models/addressModels')
+const jwt = require("jsonwebtoken");
+const Address = require("../models/addressModels");
 const Admin = require("../models/userModel");
-
 
 const adminLogin = async (req, res) => {
   try {
@@ -40,9 +39,28 @@ const adminLogin = async (req, res) => {
     }
   } catch (err) {
     res.status(400).json({
-        success: false,
-        error: "Error occur " + err.message,
+      success: false,
+      error: "Error occur " + err.message,
+    });
+  }
+};
+
+const removeAddress = async (req, res) => {
+  try {
+    const deleteAddress = await Address.destroy({
+      where: { id: req.params.id },
+    });
+    if (deleteAddress) {
+      res.status(200).json({
+        success: true,
+        message: "Address removed",
       });
+    }
+  } catch (err) {
+    res.status(400).json({
+      success: false,
+      error: "Error occur " + err.message,
+    });
   }
 };
 
@@ -84,8 +102,8 @@ const listAllAddress = async (req, res) => {
   }
 };
 
-
 module.exports = {
   adminLogin,
-  listAllAddress
+  listAllAddress,
+  removeAddress
 };

@@ -13,5 +13,11 @@ Router.get(
     auth.isAdmin,
     admin.listAllAddress
 );
+Router.delete(
+    "/address/delete/:id",
+    auth.authenticate,
+    auth.isAdmin,
+    admin.removeAddress
+);
 
 module.exports = Router;
