@@ -2,6 +2,7 @@ const Router = require("express").Router();
 const user = require("../controllers/userControllers");
 const upload = require("../middlewares/multiStoreMiddleware");
 const validate = require("../validation/user/userValidation")
+const auth = require('../middlewares/authMiddleware')
 
 Router.post(
     "/signup",
@@ -12,6 +13,7 @@ Router.post(
 Router.post(
     "/login",
     validate.LoginUserValidation,
+    auth.isUserLogin,
     user.logIn
 );
 

@@ -28,6 +28,10 @@ const User = sequelize.define("User", {
     type: DataTypes.STRING,
     allowNull: false,
   },
+  userRole:{
+    type: DataTypes.STRING,
+    allowNull:false,
+  },
   isActive: {
     type: DataTypes.BOOLEAN,
     allowNull: false,
@@ -38,7 +42,7 @@ const User = sequelize.define("User", {
 User.hasMany(Address);
 Address.belongsTo(User, {
   foreignKey: "UserId",
-  as: "add",
+  as: "Address",
 });
 sequelize.sync();
 

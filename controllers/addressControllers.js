@@ -80,6 +80,7 @@ const searchAndFilter = async (req, res) => {
     const addressList = await Address.findAndCountAll({
       limit: pageSize,
       offset: offset,
+      attributes: ["id", "address", "city", "country", "isDefault"],
       where: {
         [Op.and]: [conditionForCity, conditionForCountry],
       },
@@ -120,6 +121,7 @@ const listAllAddress = async (req, res) => {
     const allAddress = await Address.findAndCountAll({
       limit: pageSize,
       offset: offset,
+      attributes: ["id", "address", "city", "country", "isDefault"],
       include: [
         {
           model: User,
