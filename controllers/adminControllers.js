@@ -2,8 +2,7 @@ const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const Address = require("../models/addressModels");
 const Admin = require("../models/userModel");
-const sequelize = require("sequelize");
-const { DATE } = require("sequelize");
+const {Op} = require("sequelize");
 
 const adminLogin = async (req, res) => {
   try {
@@ -82,8 +81,8 @@ const listAllAddress = async (req, res) => {
     let city = req.query.city;
     let createdAtDate = await Address.min("createdAt");
     let ltNowDate = new Date();
-    const conditionForCountry = { country: { [sequelize.Op.like]: `%${country}%` } };
-    const conditionForCity = { city: { [sequelize.Op.like]: `%${city}%` } };
+    const conditionForCountry = { country: { [Op.like]: `%${country}%` } };
+    const conditionForCity = { city: { [Op.like]: `%${city}%` } };
     let page = req.query.page ? req.query.page - 1 : 0;
     page = page < 0 ? 0 : page;
     let limit = parseInt(req.query.limit || 10);
@@ -95,16 +94,16 @@ const listAllAddress = async (req, res) => {
       offset: offset,
       attributes: { exclude: "updatedAt" },
       where: {
-        [sequelize.Op.and]: [
+        [Op.and]: [
           {
-            [sequelize.Op.and]: [conditionForCity, conditionForCountry],
+            [Op.and]: [conditionForCity, conditionForCountry],
           },
           {
             createdAt: {
-              [sequelize.Op.and]: [
+              [Op.and]: [
                 {
-                  [sequelize.Op.gte]: createdAtDate,
-                  [sequelize.Op.lt]: ltNowDate,
+                  [Op.gte]: createdAtDate,
+                  [Op.lt]: ltNowDate,
                 },
               ],
             },

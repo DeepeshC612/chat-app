@@ -4,7 +4,7 @@ const auth = require("../middlewares/authMiddleware");
 
 Router.post(
     "/login",
-    auth.isAdminLogin,
+    auth.isUserLogin,
     admin.adminLogin
 );
 Router.get(

@@ -23,32 +23,20 @@ const authenticate = (req, res, next) => {
   }
 };
 
-const isUser = async (req, res, next) => {
-  let userRole = req.body.userRole;
-  if (userRole) {
-    if (userRole === "user") {
-      next();
-    } else {
-      res.status(401).json({
-        message: "You are not authorized",
-      });
-    }
-  } else {
-    res.status(400).json({
-      message: "Role is not present",
-    });
-  }
-};
 
 const isUserLogin = async (req, res, next) => {
   const isUserExist = await user.findOne({ where: { email: req.body.email } });
   if (isUserExist) {
-    if (isUserExist.userRole === "user") {
+    if (isUserExist.userRole === "admin") {
       next();
     } else {
-      res.status(401).json({
-        message: "You are not authorized",
-      });
+      if (isUserExist.userRole === "user") {
+        next();
+      } else {
+        res.status(401).json({
+          message: "You are not authorized",
+        });
+      }
     }
   } else {
     res.status(400).json({
@@ -74,29 +62,8 @@ const isAdmin = async (req, res, next) => {
   }
 };
 
-const isAdminLogin = async (req, res, next) => {
-  const isAdminExists = await user.findOne({
-    where: { email: req.body.email },
-  });
-  if (isAdminExists) {
-    if (isAdminExists.userRole === "admin") {
-      next();
-    } else {
-      res.status(401).json({
-        message: "You are not authorized",
-      });
-    }
-  } else {
-    res.status(400).json({
-      message: "Role is not present",
-    });
-  }
-};
-
 module.exports = {
   authenticate,
-  isUser,
   isUserLogin,
   isAdmin,
-  isAdminLogin,
 };
