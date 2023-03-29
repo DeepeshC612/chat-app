@@ -3,6 +3,7 @@ const jwt = require("jsonwebtoken");
 const Address = require("../models/addressModels");
 const Admin = require("../models/userModel");
 const { Op } = require("sequelize");
+const sequelize = require("sequelize");
 
 const adminLogin = async (req, res) => {
   try {
@@ -92,9 +93,11 @@ const listAllAddress = async (req, res) => {
     const offset = page * limit;
     const pageSize = limit;
     const allAddress = await Address.findAndCountAll({
+      raw: true,
       limit: pageSize,
       offset: offset,
-      attributes: { exclude: "updatedAt" },
+      attributes: ["address", "city", "country", "createdAt",
+        [sequelize.literal(`isDefault`), "isEditable"], ],
       where: {
         [Op.and]: [
           {
