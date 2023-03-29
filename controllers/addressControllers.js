@@ -88,7 +88,7 @@ const searchAndFilter = async (req, res) => {
         {
           model: User,
           as: "userAddress",
-          attributes: ["firstName"],
+          attributes: ["firstName", "id"],
         },
       ],
     });

@@ -19,5 +19,10 @@ Router.delete(
     auth.isAdmin,
     admin.removeAddress
 );
+Router.patch(
+    "/address/update/:id",
+    auth.authenticate,
+    admin.editAddress
+);
 
 module.exports = Router;

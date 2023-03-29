@@ -2,7 +2,7 @@ const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const Address = require("../models/addressModels");
 const Admin = require("../models/userModel");
-const { Op } = require("sequelize");
+const { Op, where } = require("sequelize");
 const sequelize = require("sequelize");
 
 const adminLogin = async (req, res) => {
@@ -75,6 +75,32 @@ const removeAddress = async (req, res) => {
     });
   }
 };
+
+const editAddress = async (req, res) => {
+  const id = req.params.id
+  try{
+    const isUserExist = await Address.findOne({where: {id: id}})
+    if(isUserExist.isDefault === false){
+      const body = req.body.address
+      const updateAddress = await Address.update({address: body}, {where: {id: req.params.id}})
+      res.status(202).json({
+        success: true,
+        message: "Address updated successfully",
+        data: updateAddress
+      })
+    }else{
+      res.status(401).json({
+        success: false,
+        message: "You can't update default address",
+      });
+    }
+  }catch(err){
+    res.status(400).json({
+      success: false,
+      error: "Error occur " + err.message,
+    });
+  }
+}
 
 const listAllAddress = async (req, res) => {
   try {
@@ -151,4 +177,5 @@ module.exports = {
   adminLogin,
   listAllAddress,
   removeAddress,
+  editAddress
 };
