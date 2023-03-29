@@ -2,7 +2,7 @@ const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const Address = require("../models/addressModels");
 const Admin = require("../models/userModel");
-const {Op} = require("sequelize");
+const { Op } = require("sequelize");
 
 const adminLogin = async (req, res) => {
   try {
@@ -78,9 +78,11 @@ const removeAddress = async (req, res) => {
 const listAllAddress = async (req, res) => {
   try {
     let country = req.query.country;
-    let city = req.query.city;
     let createdAtDate = await Address.min("createdAt");
     let ltNowDate = new Date();
+    let city = req.query.city;
+    let createdAt = req.query.createdAt ? req.query.createdAt : createdAtDate;
+    let date = new Date(createdAt);
     const conditionForCountry = { country: { [Op.like]: `%${country}%` } };
     const conditionForCity = { city: { [Op.like]: `%${city}%` } };
     let page = req.query.page ? req.query.page - 1 : 0;
@@ -100,10 +102,15 @@ const listAllAddress = async (req, res) => {
           },
           {
             createdAt: {
-              [Op.and]: [
+              [Op.between]: [
+                date,
                 {
-                  [Op.gte]: createdAtDate,
-                  [Op.lt]: ltNowDate,
+                  [Op.and]: [
+                    {
+                      [Op.gte]: createdAtDate,
+                      [Op.lt]: ltNowDate,
+                    },
+                  ],
                 },
               ],
             },
