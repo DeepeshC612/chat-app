@@ -1,7 +1,9 @@
 const User = require("../models/userModel");
 const bcrypt = require("bcrypt");
 require("dotenv").config();
+const mail = require("../service/emailService");
 const jwt = require("jsonwebtoken");
+const { Op } = require("sequelize");
 
 const signUp = async (req, res) => {
   try {
@@ -76,7 +78,130 @@ const logIn = async (req, res) => {
   }
 };
 
+const emailForResetPass = async (req, res) => {
+  const email = req.body.email;
+  try {
+    const isUserExist = await User.findOne({ where: { email: email } });
+    if (isUserExist) {
+      const secretKey = isUserExist.id + process.env.JWT_SECRET_KEY;
+      const token = await jwt.sign({ userID: isUserExist.id }, secretKey, {
+        expiresIn: "1h",
+      });
+      // mail.sendMail(email, isUserExist.id, token)
+      res.status(200).json({
+        success: true,
+        message: "Email send successfully please check your inbox",
+        token: token,
+      });
+    } else {
+      res.status(401).json({
+        success: false,
+        message: "This email is not registered",
+      });
+    }
+  } catch (err) {
+    res.status(400).json({
+      success: false,
+      error: "Error occur " + err.message,
+    });
+  }
+};
+
+const forgotPassword = async (req, res) => {
+  const { newPassword, confirmPassword } = req.body;
+  const id = req.params.id;
+  try {
+    const userExists = await User.findByPk(id);
+    const authorization = req.headers.authorization;
+    const token = authorization.split(" ")[1];
+    const secretKey = userExists.id + process.env.JWT_SECRET_KEY;
+    jwt.verify(token, secretKey);
+    if (newPassword && confirmPassword) {
+      if (newPassword !== confirmPassword) {
+        res.status(401).json({
+          success: "failure",
+          error: "New password & confirm password doesn't match",
+        });
+      } else {
+        const salt = await bcrypt.genSalt(10);
+        const newHashPassword = await bcrypt.hash(confirmPassword, salt);
+        await User.update(
+          { password: newHashPassword },
+          { where: { id: userExists.id } }
+        );
+        res.status(201).json({
+          success: true,
+          message: "Password reset successfully",
+        });
+      }
+    } else {
+      res.status(403).json({
+        success: false,
+        message: "All fields are required",
+      });
+    }
+  } catch (err) {
+    res.status(500).json({
+      success: false,
+      message: "Error occur " + err.message,
+    });
+  }
+};
+
+const changePassword = async (req, res) => {
+  const id = req.userID;
+  const { oldPassword, newPassword, confirmPassword } = req.body;
+  try {
+    const alreadyExists = await User.findByPk(id);
+    if (alreadyExists) {
+      const passwordCheck = await bcrypt.compare(
+        oldPassword,
+        alreadyExists.password
+      );
+      if (passwordCheck) {
+        if (newPassword && confirmPassword) {
+          const setNewHashPassword = await bcrypt.hash(newPassword, 10)
+          const updatePassword = await User.update(
+            {
+              password: setNewHashPassword,
+            },
+            { where: { id: alreadyExists.id } }
+          );
+          res.status(202).json({
+            success: true,
+            message: "Password changed successfully",
+            data: updatePassword
+          })
+        } else {
+          res.status(400).json({
+            success: false,
+            error: "New password and confirm password can not be empty",
+          });
+        }
+      } else {
+        res.status(401).json({
+          success: false,
+          error: "Old password is wrong",
+        });
+      }
+    } else {
+      res.status(402).json({
+        success: false,
+        error: "User not exists with this email",
+      });
+    }
+  } catch (err) {
+    res.status(500).json({
+      success: false,
+      message: "Error occur " + err.message,
+    });
+  }
+};
+
 module.exports = {
   signUp,
   logIn,
+  emailForResetPass,
+  forgotPassword,
+  changePassword
 };

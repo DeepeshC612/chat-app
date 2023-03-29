@@ -16,6 +16,20 @@ Router.post(
     auth.isUserLogin,
     user.logIn
 );
+Router.post(
+    "/email-reset-password",
+    auth.isUserLogin,
+    user.emailForResetPass
+);
+Router.post(
+    "/forgot-password/:id",
+    user.forgotPassword
+);
+Router.post(
+    "/change-password",
+    auth.authenticate,
+    user.changePassword
+);
 
 
 module.exports = Router
