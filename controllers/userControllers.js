@@ -40,6 +40,12 @@ const logIn = async (req, res) => {
   try {
     const { email, password } = req.body;
     const isUserExist = await User.findOne({ where: { email: email } });
+    if(isUserExist.userRole === 'admin'){
+      res.status(401).json({
+        success: false,
+        error: "You are not authorized to login here"
+      })
+    } else {
     if (isUserExist) {
       const pass = await bcrypt.compare(password, isUserExist.password);
       if (pass) {
@@ -70,6 +76,7 @@ const logIn = async (req, res) => {
         message: "User not found",
       });
     }
+  }
   } catch (err) {
     res.status(400).json({
       success: false,

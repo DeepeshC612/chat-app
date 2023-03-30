@@ -9,35 +9,42 @@ const adminLogin = async (req, res) => {
   try {
     const { email, password } = req.body;
     const isAdminExists = await Admin.findOne({ where: { email: email } });
-    if (isAdminExists) {
-      const pass = await bcrypt.compare(password, isAdminExists.password);
-      if (pass) {
-        let token = await jwt.sign(
-          { userID: isAdminExists.id },
-          process.env.JWT_SECRET_KEY,
-          {
-            expiresIn: "2h",
-          }
-        );
-        res.status(200).json({
-          success: true,
-          message: "Login successfully",
-          email: isAdminExists.email,
-          firstName: isAdminExists.firstName,
-          lastName: isAdminExists.lastName,
-          token: token,
-        });
+    if (isAdminExists.userRole === "user") {
+      res.status(401).json({
+        success: false,
+        error: "You are not authorized to login here",
+      });
+    } else {
+      if (isAdminExists) {
+        const pass = await bcrypt.compare(password, isAdminExists.password);
+        if (pass) {
+          let token = await jwt.sign(
+            { userID: isAdminExists.id },
+            process.env.JWT_SECRET_KEY,
+            {
+              expiresIn: "2h",
+            }
+          );
+          res.status(200).json({
+            success: true,
+            message: "Login successfully",
+            email: isAdminExists.email,
+            firstName: isAdminExists.firstName,
+            lastName: isAdminExists.lastName,
+            token: token,
+          });
+        } else {
+          res.status(402).json({
+            success: false,
+            message: "Email or password is wrong",
+          });
+        }
       } else {
-        res.status(402).json({
+        res.status(403).json({
           success: false,
-          message: "Email or password is wrong",
+          message: "User not registered with this email",
         });
       }
-    } else {
-      res.status(403).json({
-        success: false,
-        message: "User not registered with this email",
-      });
     }
   } catch (err) {
     res.status(400).json({
@@ -77,41 +84,48 @@ const removeAddress = async (req, res) => {
 };
 
 const editAddress = async (req, res) => {
-  const id = req.params.id
-  try{
-    const isUserExist = await Address.findOne({where: {id: id}})
-    if(isUserExist.isDefault === false){
-      const body = req.body.address
-      const updateAddress = await Address.update({address: body}, {where: {id: req.params.id}})
+  const id = req.params.id;
+  try {
+    const isUserExist = await Address.findOne({ where: { id: id } });
+    if (isUserExist.isDefault === false) {
+      const body = req.body.address;
+      const updateAddress = await Address.update(
+        { address: body },
+        { where: { id: id } }
+      );
       res.status(202).json({
         success: true,
         message: "Address updated successfully",
-        data: updateAddress
-      })
-    }else{
+        data: updateAddress,
+      });
+    } else {
       res.status(401).json({
         success: false,
         message: "You can't update default address",
       });
     }
-  }catch(err){
+  } catch (err) {
     res.status(400).json({
       success: false,
       error: "Error occur " + err.message,
     });
   }
-}
+};
 
 const listAllAddress = async (req, res) => {
   try {
     let country = req.query.country;
     let createdAtDate = await Address.min("createdAt");
     let ltNowDate = new Date();
+    let startDate = req.query.date
+    let endDate = req.query.endDate
+    let condition1 = startDate || createdAtDate
+    let condition2 = endDate || ltNowDate
     let city = req.query.city;
-    let createdAt = req.query.createdAt ? req.query.createdAt : createdAtDate;
-    let date = new Date(createdAt);
-    const conditionForCountry = { country: { [Op.like]: `%${country}%` } };
-    const conditionForCity = { city: { [Op.like]: `%${city}%` } };
+    const conditionForCountry = country
+      ? { country: { [Op.like]: `%${country}%` } }
+      : null;
+    const conditionForCity = city ? { city: { [Op.like]: `%${city}%` } } : null;
     let page = req.query.page ? req.query.page - 1 : 0;
     page = page < 0 ? 0 : page;
     let limit = parseInt(req.query.limit || 10);
@@ -122,22 +136,30 @@ const listAllAddress = async (req, res) => {
       raw: true,
       limit: pageSize,
       offset: offset,
-      attributes: ["address", "city", "country", "createdAt",
-        [sequelize.literal(`isDefault`), "isEditable"], ],
+      attributes: [
+        "id",
+        "address",
+        "city",
+        "country",
+        "createdAt",
+        [sequelize.literal(`isDefault`), "isEditable"],
+      ],
       where: {
-        [Op.and]: [
+        [Op.or]: [
           {
             [Op.and]: [conditionForCity, conditionForCountry],
           },
           {
             createdAt: {
-              [Op.between]: [
-                date,
+              [Op.or]: [
+                {
+                  [Op.between]: [startDate, endDate],
+                },
                 {
                   [Op.and]: [
                     {
-                      [Op.gte]: createdAtDate,
-                      [Op.lt]: ltNowDate,
+                      [Op.gte]: condition1,
+                      [Op.lt]: condition2,
                     },
                   ],
                 },
@@ -151,7 +173,7 @@ const listAllAddress = async (req, res) => {
         {
           model: Admin,
           as: "userAddress",
-          attributes: ["firstName", "email"],
+          attributes: ["firstName", "email", "id"],
         },
       ],
     });
@@ -177,5 +199,5 @@ module.exports = {
   adminLogin,
   listAllAddress,
   removeAddress,
-  editAddress
+  editAddress,
 };
