@@ -13,34 +13,53 @@ const authenticate = (req, res, next) => {
       next();
     } catch (err) {
       res.status(401).json({
-        error: "Invalid token!",
+        success: false,
+        error: "Unauthorized user " + err.message
       });
     }
-  } else {
-    res.status(403).json({
-      error: "Token is required for authentication",
+  }
+   if(!token) {
+    res.status(401).json({
+      success: false,
+      error: "Unauthorized user no token",
     });
   }
 };
 
 
 const isUserLogin = async (req, res, next) => {
-  const isUserExist = await user.findOne({ where: { email: req.body.email } });
-  if (isUserExist) {
-    if (isUserExist.userRole === "admin") {
-      next();
-    } else {
-      if (isUserExist.userRole === "user") {
-        next();
+  try {
+    const { userRole, email } = req.body
+    const isEmailExist = await user.findOne({ where: { email: email } })
+    if (isEmailExist) {
+      if (isEmailExist.userRole === userRole) {
+        next()
       } else {
-        res.status(401).json({
-          message: "You are not authorized",
-        });
+        if (userRole === "admin") {
+          res.status(401).json({
+            message: "You are not admin",
+          });
+        } else {
+          if(userRole==="user"){
+          res.status(401).json({
+            message: "You are not user",
+          });
+        }else{
+          res.status(404).json({
+            message: "Role is not valid",
+          });
+        }
       }
+      }
+    } else {
+      res.status(404).json({
+        message: "User is not exists with this email",
+      });
     }
-  } else {
+  } catch (err) {
     res.status(400).json({
-      message: "Role is not present",
+      success: "failure",
+      message: "Error occur " + err.message,
     });
   }
 };

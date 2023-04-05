@@ -1,36 +1,41 @@
 const { Op } = require("sequelize");
 const User = require("../models/userModel");
 const Address = require("../models/addressModels");
+const { sequelize } = require("../models");
 
 const addAddress = async (req, res) => {
   try {
-    const isDefaultAddress = await Address.findOne({
-      where: { UserId: req.userID },
-    });
-    if (isDefaultAddress) {
-      const UserId = req.userID;
-      let addressData = { ...req.body, UserId: UserId };
-      await Address.create(addressData);
-    } else {
-      const UserId = req.userID;
-      const isDefault = true;
-      let addressData = { ...req.body, UserId: UserId, isDefault: isDefault };
-      await Address.create(addressData);
-    }
-    const newAddress = await Address.findAll({
-      include: [
-        {
-          model: User,
-          as: "userAddress",
-        },
-      ],
-      where: { UserId: req.userID },
-    });
-    res.status(201).json({
-      success: true,
-      message: "Address created successfully",
-      Address: newAddress,
-    });
+    const result = await sequelize.transaction(async (t) => {
+      const isDefaultAddress = await Address.findOne({
+        where: { UserId: req.userID },
+      });
+      if (isDefaultAddress) {
+        const UserId = req.userID;
+        let addressData = { ...req.body, UserId: UserId };
+        await Address.create(addressData, {transaction: t});
+      } else {
+        const UserId = req.userID;
+        const isDefault = true;
+        let addressData = { ...req.body, UserId: UserId, isDefault: isDefault };
+        await Address.create(addressData, {transaction: t});
+      }
+      const newAddress = await Address.scope('city').findAll({
+        include: [
+          {
+            model: User,
+            as: "userAddress",
+          },
+        ],
+        where: { UserId: req.userID },
+        transaction: t
+      });
+      res.status(201).json({
+        success: true,
+        message: "Address created successfully",
+        Address: newAddress,
+      });
+      return isDefaultAddress;
+    })
   } catch (err) {
     res.status(400).json({
       success: false,
