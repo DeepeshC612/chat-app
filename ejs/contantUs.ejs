@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Contact Us</title>
+    <meta http-equiv="Content-Security-Policy" content="frame-src 'self' https://www.youtube.com;">
+</head>
+<body>
+    <h1>Contact us</h1>
+    <h2>from</h2>
+        <p>title: <%= data.title %></p>
+        <p>description: <%= data.description %></p>
+    <div>
+        <iframe width="560" height="315" src="<%= data.videoLink %>" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen></iframe>
+    </div>
+</body>
+</html>

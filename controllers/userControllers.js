@@ -1,4 +1,5 @@
-const User = require("../models/userModel");
+const models = require("../models/index");
+const { User } = models;
 const bcrypt = require("bcrypt");
 require("dotenv").config();
 const mail = require("../service/emailService");
@@ -44,7 +45,7 @@ const logIn = async (req, res) => {
       const pass = await bcrypt.compare(password, isUserExist.password);
       if (pass) {
         let token = await jwt.sign(
-          { userID: isUserExist.id },
+          { userID: isUserExist },
           process.env.JWT_SECRET_KEY,
           {
             expiresIn: "2h",
@@ -53,9 +54,9 @@ const logIn = async (req, res) => {
         res.status(200).json({
           success: true,
           message: "Login successfully",
-          email: isUserExist.email,
-          firstName: isUserExist.firstName,
-          lastName: isUserExist.lastName,
+          id: isUserExist.id,
+          name: isUserExist.firstName + " " + isUserExist.lastName,
+          roomId: isUserExist.firstName + isUserExist.email,
           token: token,
         });
       } else {
@@ -77,6 +78,29 @@ const logIn = async (req, res) => {
     });
   }
 };
+const userList = async (req, res) => {
+  try {
+    const { id } = req.body;
+    const isUserExist = await User.findAll({ where: { id: { [Op.ne]: id } } });
+    if (isUserExist) {
+        res.status(200).json({
+          success: true,
+          message: "user list fetched",
+          user: isUserExist,
+        }); 
+    } else {
+      res.status(403).json({
+        success: false,
+        message: "Users not found",
+      });
+    }
+  } catch (err) {
+    res.status(400).json({
+      success: false,
+      error: "Error occur " + err.message,
+    });
+  }
+};
 
 const emailForResetPass = async (req, res) => {
   const email = req.body.email;
@@ -84,7 +108,7 @@ const emailForResetPass = async (req, res) => {
     const isUserExist = await User.findOne({ where: { email: email } });
     if (isUserExist) {
       const secretKey = isUserExist.id + process.env.JWT_SECRET_KEY;
-      const token = await jwt.sign({ userID: isUserExist.id }, secretKey, {
+      const token = jwt.sign({ userID: isUserExist.id }, secretKey, {
         expiresIn: "1h",
       });
       // mail.sendMail(email, isUserExist.id, token)
@@ -160,7 +184,7 @@ const changePassword = async (req, res) => {
       );
       if (passwordCheck) {
         if (newPassword && confirmPassword) {
-          const setNewHashPassword = await bcrypt.hash(newPassword, 10)
+          const setNewHashPassword = await bcrypt.hash(newPassword, 10);
           const updatePassword = await User.update(
             {
               password: setNewHashPassword,
@@ -170,8 +194,8 @@ const changePassword = async (req, res) => {
           res.status(202).json({
             success: true,
             message: "Password changed successfully",
-            data: updatePassword
-          })
+            data: updatePassword,
+          });
         } else {
           res.status(400).json({
             success: false,

@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>login</title>
+    <style>
+      body {
+        font-family: Arial, Helvetica, sans-serif;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+      }
+      .login {
+        box-sizing: content-box;
+        text-align: center;
+        margin-top: 50px;
+      }
+      input[type="text"],
+      input[type="password"] {
+        width: 100%;
+        padding: 12px 20px;
+        margin: 8px 0;
+        display: inline-block;
+        border: 1px solid #ccc;
+        box-sizing: border-box;
+      }
+      button {
+        background-color: #0d89db;
+        color: white;
+        padding: 14px 20px;
+        margin: 8px 0;
+        border: none;
+        cursor: pointer;
+        width: 100%;
+      }
+      button:hover {
+        opacity: 0.8;
+      }
+      .cancelbtn {
+        width: auto;
+        padding: 10px 18px;
+        background-color: rgb(240, 39, 39);
+      }
+      .container {
+        padding: 20px;
+      }
+      span.psw {
+        float: right;
+        padding-top: 16px;
+      }
+      .box {
+        width: 400px;
+      }
+      @media screen and (max-width: 300px) {
+        span.psw {
+          display: block;
+          float: none;
+        }
+        .cancelbtn {
+          width: 100%;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <h1 class="login">Login</h1>
+    <div class="box">
+      <div class="container">
+        <label for="uname"><b>Username</b></label>
+        <input
+          type="text"
+          placeholder="Enter Username"
+          name="uname"
+          id="username"
+          required
+        />
+
+        <label for="psw"><b>Password</b></label>
+        <input
+          type="password"
+          placeholder="Enter Password"
+          name="psw"
+          id="password"
+          required
+        />
+
+        <button onclick="login()">Login</button>
+        <label>
+          <input type="checkbox" checked="checked" name="remember" /> Remember
+          me
+        </label>
+      </div>
+
+      <div class="container" style="background-color: #f1f1f1">
+        <button type="button" class="cancelbtn">Cancel</button>
+        <span class="psw"
+          ><a href="#" style="text-decoration: none">Forgot password?</a></span
+        >
+      </div>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <script>
+      async function login() {
+        try {
+          let userName = document.getElementById("username").value;
+          let password = document.getElementById("password").value;
+          var res = await axios.post("http://localhost:8000/user/login", {
+            email: userName,
+            password: password,
+            userRole: "admin",
+          });
+          if (res.status == 200) {
+            localStorage.clear()
+            localStorage.setItem("id", res.data.id);
+            localStorage.setItem("name", res.data.name);
+            localStorage.setItem("roomName", res.data.roomId);
+           window.location.href = "http://localhost:8000/chat/logged"
+          }
+        } catch (error) {
+          console.log(error);
+          if (error.response.status == 500) {
+            alert("sahi dal le la#@de");
+          }
+        }
+      }
+    </script>
+  </body>
+</html>

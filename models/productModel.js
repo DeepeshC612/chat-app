@@ -1,21 +1,26 @@
-const { DataTypes } = require("sequelize");
-const { sequelize } = require("../models/index");
-const User = require("./userModel");
+// const { DataTypes } = require("sequelize");
+// const { sequelize } = require("../models/index");
+// const User = require("./userModel");
 
-const Product = sequelize.define("product", {
+module.exports = (sequelize, DataTypes) => {
+const Product = sequelize.define("Product", {
   productName: {
     type: DataTypes.STRING,
     allowNull: false,
     unique: true,
   },
-  description: {
-    type: DataTypes.STRING,
+  price: {
+    type: DataTypes.INTEGER,
     allowNull: false,
   },
-  productImage: {
-    type: DataTypes.STRING,
+  quantity: {
+    type: DataTypes.INTEGER,
     allowNull: false,
   },
+  // productImage: {
+  //   type: DataTypes.STRING,
+  //   allowNull: false,
+  // },
   isActive: {
     type: DataTypes.BOOLEAN,
     allowNull: false,
@@ -23,11 +28,12 @@ const Product = sequelize.define("product", {
   },
 });
 
-User.hasMany(Product);
-Product.belongsTo(User, {
-  foreignKey: "UserId",
-  as: "product",
-});
-sequelize.sync();
+// User.hasMany(Product);
+// Product.belongsTo(User, {
+//   foreignKey: "UserId",
+//   as: "product",
+// });
+// sequelize.sync();
 
-module.exports = Product;
+return Product;
+}

@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>Invoice</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        background-color: #f2f2f2;
+        display: flex;
+        flex-direction: column;
+        height: 100%;
+        margin: 0;
+        padding: 0;
+      }
+
+      .container {
+        width: 595px;
+        height: 842px;
+        margin: 0 auto;
+        min-height: 100%;
+        background-color: #fff;
+        padding: 30px;
+        box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+      }
+
+      header {
+        text-align: center;
+        margin-bottom: 20px;
+      }
+
+      h1 {
+        margin: 0;
+        font-size: 24px;
+        color: #333;
+      }
+
+      table {
+        width: 10%;
+        height: 30%;
+        border-collapse: collapse;
+        margin-bottom: 20px;
+      }
+
+      th,
+      td {
+        padding: 10px;
+        text-align: left;
+        border-bottom: 1px solid #ddd;
+      }
+
+      th {
+        background-color: #f5f5f5;
+        justify-content: center;
+        color: #333;
+      }
+
+      tfoot td {
+        font-weight: bold;
+        border-top: 1px solid #ddd;
+      }
+
+      footer {
+        margin-top: auto;
+        text-align: center;
+        padding: 2px;
+        background-color: #f5f5f5;
+        color: #888;
+      }
+      .logo-container {
+        text-align: center;
+        margin-right: 20px;
+      }
+      .logo-container img {
+        width: 150px;
+      }
+      .date {
+        text-align: right;
+      }
+      .invoice-num {
+        text-align: right;
+      }
+      .invoice {
+        text-align: left;
+        margin-top: 20px;
+      }
+      .footImg {
+        width: 200px;
+        margin-bottom: 10px;
+        margin-top: 20px;
+        text-align: right;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <header>
+        <h1 class="invoice">Invoice</h1>
+        <p class="invoice-num">Invoice Number: <%= data.invoiceNumber %></p>
+        <p class="date">Date: <%= data.invoiceDate %></p>
+      </header>
+      <table>
+        <thead>
+          <tr>
+            <th>Product Image</th>
+            <th>Description</th>
+            <th>Quantity</th>
+            <th>Product Price</th>
+            <th>Total</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>
+              <div class="logo-container">
+                <img src="<%= data.productImg %>" alt="Company Logo" />
+              </div>
+            </td>
+            <td><%= data.description %></td>
+            <td><%= data.quantity %></td>
+            <td>₹<%= data.unitPrice %></td>
+            <td>₹<%= data.quantity * data.unitPrice %></td>
+          </tr>
+        </tbody>
+      </table>
+      <div class="footImg">
+        <p>Signature</p>
+        <img
+          class="footImg"
+          src="<%= data.signature %>"
+          alt="Signature"
+        />
+      </div>
+      <footer>
+        <p>Thank you for your shopping!</p>
+      </footer>
+    </div>
+  </body>
+</html>
