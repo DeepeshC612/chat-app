@@ -136,6 +136,9 @@ body {
   background-color: #f0f0f0;
   border-top: 1px solid #ccc;
 }
+.app-header {
+  display: flex;
+}
 .chat-input {
   flex-grow: 1;
   padding: 8px;
@@ -159,10 +162,13 @@ body {
 }
 .user-item {
   cursor: pointer;
-  transition: background-color 0.3s ease;
+  transition: transform 0.3s ease, opacity 0.3s ease;
 }
 .user-item:hover {
   background-color: #f0f0f0;
+  transform: scale(0.95);
+  opacity: 1.0;
+  cursor: pointer;
 }
 .user-list {
   overflow-y: auto;
@@ -170,10 +176,28 @@ body {
 .left-panel {
   width: 220px;
   padding: 20px;
-  background-color: #f0f0f0;
+  background-color: #fffdfd;
   display: flex;
   flex-direction: column;
   box-shadow: 0.5px 0.5px 3px 0px rgba(0, 0, 0, 0.5);
+}
+
+.groupIcon {
+  border: solid;
+  border-width: 2px 2px 2px 2px;
+  border-radius: 50%;
+  margin-top: 7px;
+  margin-left: 102px;
+  object-fit: contain;
+  align-content: center;
+  background-color: #098375;
+  transition: transform 0.3s ease, opacity 0.3s ease;
+  box-shadow: 0.9px 0.9px 3px 0px rgba(0, 0, 0, 0.5);
+}
+.groupIcon:hover {
+  transform: scale(1.1);
+  opacity: 0.8;
+  cursor: pointer;
 }
 .Pin {
   border-radius: 10%;
@@ -198,6 +222,9 @@ body {
   border: 2px solid #4caf50;
   object-fit: contain;
 }
+.message.me .sent-image .h1 {
+  font-size: larger;
+}
 .message.you .receive-image {
   max-width: 20%;
   max-height: 20%;
@@ -208,4 +235,85 @@ body {
 .typing {
   margin-left: 10px;
   align-items: center;
+}
+
+.user-selection-popup {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(255, 255, 255, 0.95); /* Semi-transparent background */
+  z-index: 2;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+}
+.user-selection-popup {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(255, 255, 255, 0.95); /* Semi-transparent background */
+    z-index: 2;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+}
+h2 {
+  font-size: 24px;
+  margin-bottom: 15px;
+  font-weight: bold;
+  color: #075e54; /* WhatsApp green */
+}
+.user-list-content {
+    background-color: #fff;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.5);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+.user-items span {
+  margin-left: 10px;
+  font-size: 15px;
+}
+input[type="checkbox"] {
+  width: 20px;
+  height: 20px;
+  margin-right: 10px;
+}
+.create-group-button {
+  margin-top: 15px;
+  padding: 10px 20px;
+  background-color: #075e54; /* WhatsApp green */
+  color: #fff;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 18px;
+  font-weight: bold;
+  transition: background-color 0.3s ease;
+}
+.create-group-button:hover {
+  background-color: #128c7e; /* Darker green on hover */
+}
+.close-popup {
+  margin-top: 15px;
+  padding: 10px 20px;
+  background-color: #d9dbdb; /* WhatsApp gray */
+  color: #000;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 18px;
+  font-weight: bold;
+  transition: background-color 0.3s ease;
+}
+.close-popup:hover {
+    background-color: #b6b8b8; /* Darker gray on hover */
 }

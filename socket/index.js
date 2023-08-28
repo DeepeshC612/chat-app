@@ -20,7 +20,11 @@ let socket = (server) => {
       try {
         const usersList = await userList(data);
         if (usersList) {
-          socket.emit("user list", usersList);
+          if(data.popUp){
+            socket.emit("userListPopup", usersList);
+          } else {
+            socket.emit("user list", usersList);
+          }
           socket.userId = data.userId;
           await userOnlineStatus(data.userId, true);
           io.emit("user status", {

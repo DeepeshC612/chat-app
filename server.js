@@ -14,7 +14,6 @@ app.use(bodyParser.json())
 app.use(bodyParser.urlencoded({extended: false}))
 app.use(express.static('public'));
 app.use("/uploads", express.static('uploads'))
-
 app.use("/", router)
 const server = app.listen(process.env.PORT, function(req,res){
     database()

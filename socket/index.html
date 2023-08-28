@@ -12,7 +12,18 @@
     <div class="chat-container">
       <div class="left-panel">
         <div class="header" id="header">
-          <p class="groupName">Message App</p>
+          <div class="app-header">
+            <p class="groupName">Chat-App</p>
+              <img src="/image/add-group.png" alt="groupIcon" style="width: 35px; height: 35px;" class="groupIcon" id="groupIcon"></img>
+            <div class="user-selection-popup" id="userSelectionPopup">
+              <div class="user-list-content">
+                <h2>Select Users to Create a Group</h2>
+                <div class="user-list" id="userSelectionList"></div>
+                <button class="close-popup" id="closeSelectionPopup">Close</button>
+                <button class="create-group-button" id="createGroupButton">Create Group</button>
+              </div>
+            </div>
+          </div>
         </div>
         <div class="user-list" id="userList"></div>
       </div>

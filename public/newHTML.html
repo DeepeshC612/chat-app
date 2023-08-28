@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>File Upload Example</title>
+  </head>
+  <body>
+    <h1>Upload a File</h1>
+    <input type="file" id="fileInput" />
+    <button id="uploadButton">Upload</button>
+
+    <script>
+      const uploadFileToLambda = async (file) => {
+        const formData = new FormData();
+        formData.append("file", file); // 'file' should match the field name in your Lambda function
+        console.log("data",formData)
+        try {
+          const response = await fetch(
+            "https://bloom-project-dev.s3.us-west-1.amazonaws.com/testFiles?AWSAccessKeyId=ASIA3A4F23HHDPYM35EH&Content-Type=application%2Foctet-stream&Expires=1692956609&Signature=iWXnuwx6H%2FPC1tLKn5MVpOyfK24%3D&X-Amzn-Trace-Id=Root%3D1-64e869b0-5a641e9d4a169772157d77c4%3BParent%3D4de69b137c95279f%3BSampled%3D0%3BLineage%3Dc1c5e21a%3A0&x-amz-security-token=IQoJb3JpZ2luX2VjEHkaCXVzLXdlc3QtMSJGMEQCIFFW%2FWYpyTO91qVKOh2h2gcCeYzmAmTAV6hW5Ic%2FsjWFAiBsV1Xxx3uyKKV8zOrKKfL1kWDWKxGz9xmSpKx5SmZdQSr8AghCEAUaDDc1NzgwNTUzNzc0MiIMGclHI20BIBxc%2B%2FVRKtkCsFcpV8yUPQs9H6UUJAb%2Fe%2FDW1GanzVNt7o1UJ3sc62TtJE1iuCZNFmf%2FjrZP6dy%2Baue6twtlAvK%2Fk1gyBNxwa7p4PrFILs3Lx0NIgZvmUNYBZWzwgBOEXNw%2FE77A66l47eY3bMTP3vtWlNX47FECGPEvF4PHw5KDKoZlH4SBd6srm0AXRpBMmMm32Sy2ms4oGF18uLCh4fC%2Fegr3i%2BwOAn7SraZmc5MJB0qJU0PjAOM3SAonX8mN6UE%2FJ3ltfctXC9WK5rCw2sFHzxV6nBTB05bFbgGBCcZT0cX%2FvwYPOi%2B7RA1VQNwTIUORpjAptpwAM9mB97F1ZgviqZhbViCkP1rwT6OWeg29Chj0nqGkIiDK0HQofYHENXwxN39i5o6VLZ7p8z1s%2Bpse1wLtK%2F3UbgyiRR3Ro1bPAOf3%2FTGOYlUs4%2BYm5hZTxDDAqlJ9f0rMyBQ0MiNJSfhWMOLSoacGOp8BS55QxHm1n5imCuvwRTyKJ9mGXU5Miuh8HI4ipnLYwXyvi7Wkf4nQc32hPU8JDFlO0ENdD4nVfskOrcXSUCehyRWk3Avb9JVLL7gQQ1sf29WWpWNIy5%2Fiky2qT4wFbT5hkQYOs41pQZVXQV04GnwBRaN02jVigF8RGZc07H2Mh4MRxBqa5D7ZAbPxEWojsZSfKg8E7hxjq5qDkl964ohq",
+            {
+              method: "PUT",
+              body: formData,
+            }
+          );
+          console.log(response)
+          if (response.ok) {
+            console.log("File sent to Lambda successfully.");
+          } else {
+            console.log("Sending file to Lambda failed.");
+          }
+        } catch (error) {
+          console.log("Error:", error);
+        }
+      };
+
+      // Example of how to use it with an HTML input element
+      const fileInput = document.getElementById("fileInput");
+      const uploadButton = document.getElementById("uploadButton");
+
+      uploadButton.addEventListener("click", () => {
+        const file = fileInput.files[0];
+        if (file) {
+          uploadFileToLambda(file);
+        } else {
+          console.log("Please select a file.");
+        }
+      });
+    </script>
+  </body>
+</html>

@@ -8,7 +8,7 @@ document.addEventListener("DOMContentLoaded", function () {
   var online = true;
   var timeout = undefined;
 
-  socket.emit("users", { userId: userId });
+  socket.emit("users", { userId: userId, popUp: false });
   socket.on("user list", function (userList) {
     displayUserList(userList);
   });
@@ -88,7 +88,9 @@ document.addEventListener("DOMContentLoaded", function () {
           })
           .then((data) => {
             if (data.data.success) {
-              let messageValue = document.getElementById("chatInput").value.trim();
+              let messageValue = document
+                .getElementById("chatInput")
+                .value.trim();
               socket.emit("chat message", {
                 image: true,
                 message: data.data.message.message,
@@ -207,6 +209,69 @@ document.addEventListener("DOMContentLoaded", function () {
     }
   });
 
+  // Open Popup
+  function openUserSelectionPopup() {
+    const userSelectionPopup = document.getElementById("userSelectionPopup");
+    userSelectionPopup.style.display = "block";
+    socket.emit("users", { userId: userId, popUp: true });
+    socket.on("userListPopup", function (userList) {
+      displayUserListInPopup(userList);
+    });
+  }
+
+  //Close Popup
+  function closeUserSelectionPopup() {
+    const userSelectionPopup = document.getElementById("userSelectionPopup");
+    userSelectionPopup.style.display = "none";
+  }
+
+  //Display user list in popup
+  function displayUserListInPopup(userList) {
+    const userSelectionList = document.getElementById("userSelectionList");
+    userSelectionList.innerHTML = "";
+
+    userList.forEach((user) => {
+      const userItem = document.createElement("div");
+      userItem.className = "user-items";
+      userItem.dataset.userId = user.id;
+      userItem.dataset.toUserEmail = user.email;
+      userItem.style.marginBlock = "5px";
+
+      const userName = document.createElement("span");
+      userName.textContent = user.firstName + " " + user.lastName;
+
+      const selectUserCheckbox = document.createElement("input");
+      selectUserCheckbox.type = "checkbox";
+      selectUserCheckbox.name = "selectedUsers";
+      selectUserCheckbox.value = user.id;
+
+      userItem.appendChild(selectUserCheckbox);
+      userItem.appendChild(userName);
+
+      userSelectionList.appendChild(userItem);
+    });
+  }
+
+  const groupButton = document.getElementById('groupIcon');
+  groupButton.addEventListener('click', openUserSelectionPopup);
+
+  const closeUserSelectionButton = document.getElementById('closeSelectionPopup');
+  closeUserSelectionButton.addEventListener('click', closeUserSelectionPopup)
+
+  const createGroupButton = document.getElementById('createGroupButton');
+  createGroupButton.addEventListener('click', createGroup)
+
+  // Create group function
+  function createGroup() {
+    const selectedUserIds = []
+    const selectedUserCheckboxes = document.querySelectorAll('input[name="selectedUsers"]:checked');
+    selectedUserCheckboxes.forEach((checkbox) => {
+      selectedUserIds.push(checkbox.value)
+    })
+
+    console.log("selected user id", selectedUserIds)
+    closeUserSelectionPopup()
+  }
   // Open the chat interface
   function openChatInterface(userName) {
     clearChatMessages();
@@ -220,6 +285,7 @@ document.addEventListener("DOMContentLoaded", function () {
         senderId: userId,
       });
     });
+    scrollToBottom();
   }
 
   //Display send Image
