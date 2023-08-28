@@ -42,6 +42,7 @@ let socket = (server) => {
           name: data.roomName,
           toUserId: data.toUserId,
           createdBy: data.createdBy,
+          popUp: data.popUp
         };
         // Save user info to database
         const newGroup = await addNewGroup(userData);

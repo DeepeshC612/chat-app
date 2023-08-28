@@ -65,6 +65,7 @@ document.addEventListener("DOMContentLoaded", function () {
         roomName:
           event.target.dataset.toUserEmail + event.target.dataset.userId,
         createdBy: userId,
+        popUp: false
       });
       openChatInterface(clickedUserName);
     }
@@ -209,6 +210,15 @@ document.addEventListener("DOMContentLoaded", function () {
     }
   });
 
+  document
+    .getElementById("groupNameInput")
+    .addEventListener("input", enableCreateGroupButton);
+  document
+    .querySelectorAll('input[name="selectedUsers"]')
+    .forEach(function (checkbox) {
+      checkbox.addEventListener("change", enableCreateGroupButton);
+    });
+
   // Open Popup
   function openUserSelectionPopup() {
     const userSelectionPopup = document.getElementById("userSelectionPopup");
@@ -223,6 +233,7 @@ document.addEventListener("DOMContentLoaded", function () {
   function closeUserSelectionPopup() {
     const userSelectionPopup = document.getElementById("userSelectionPopup");
     userSelectionPopup.style.display = "none";
+    document.getElementById("groupNameInput").value = "";
   }
 
   //Display user list in popup
@@ -252,26 +263,58 @@ document.addEventListener("DOMContentLoaded", function () {
     });
   }
 
-  const groupButton = document.getElementById('groupIcon');
-  groupButton.addEventListener('click', openUserSelectionPopup);
+  const groupButton = document.getElementById("groupIcon");
+  groupButton.addEventListener("click", openUserSelectionPopup);
 
-  const closeUserSelectionButton = document.getElementById('closeSelectionPopup');
-  closeUserSelectionButton.addEventListener('click', closeUserSelectionPopup)
+  const closeUserSelectionButton = document.getElementById(
+    "closeSelectionPopup"
+  );
+  closeUserSelectionButton.addEventListener("click", closeUserSelectionPopup);
 
-  const createGroupButton = document.getElementById('createGroupButton');
-  createGroupButton.addEventListener('click', createGroup)
+  const createGroupButton = document.getElementById("createGroupButton");
+  createGroupButton.addEventListener("click", createGroup);
 
   // Create group function
   function createGroup() {
-    const selectedUserIds = []
-    const selectedUserCheckboxes = document.querySelectorAll('input[name="selectedUsers"]:checked');
+    const selectedUserIds = [];
+    const selectedUserCheckboxes = document.querySelectorAll(
+      'input[name="selectedUsers"]:checked'
+    );
     selectedUserCheckboxes.forEach((checkbox) => {
-      selectedUserIds.push(checkbox.value)
-    })
+      selectedUserIds.push(checkbox.value);
+    });
+    const groupNameInput = document.getElementById("groupNameInput");
+    const groupName = groupNameInput.value.trim();
 
-    console.log("selected user id", selectedUserIds)
-    closeUserSelectionPopup()
+    socket.emit("clicked user", {
+      toUserId: selectedUserIds,
+      roomName: groupName + '-' + userId + '-' + Date.now(),
+      createdBy: userId,
+      popUp: true
+    })
+    console.log("selected user id", selectedUserIds);
+    console.log("Group Name:", groupName);
+    closeUserSelectionPopup();
   }
+
+  // Enable create group function
+  function enableCreateGroupButton() {
+    const createGroupButton = document.getElementById("createGroupButton");
+    const groupNameInput = document.getElementById("groupNameInput");
+    const selectedUserCheckboxes = document.querySelectorAll(
+      'input[name="selectedUsers"]:checked'
+    );
+
+    if (
+      selectedUserCheckboxes.length > 0 &&
+      groupNameInput.value.trim() !== ""
+    ) {
+      createGroupButton.removeAttribute("disabled");
+    } else {
+      createGroupButton.setAttribute("disabled", "true");
+    }
+  }
+
   // Open the chat interface
   function openChatInterface(userName) {
     clearChatMessages();

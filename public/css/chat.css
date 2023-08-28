@@ -190,7 +190,7 @@ body {
   margin-left: 102px;
   object-fit: contain;
   align-content: center;
-  background-color: #098375;
+  background-color: #128c7e;
   transition: transform 0.3s ease, opacity 0.3s ease;
   box-shadow: 0.9px 0.9px 3px 0px rgba(0, 0, 0, 0.5);
 }
@@ -316,4 +316,11 @@ input[type="checkbox"] {
 }
 .close-popup:hover {
     background-color: #b6b8b8; /* Darker gray on hover */
+}
+
+#groupNameInput {
+  flex-grow: 1;
+  padding: 8px;
+  border-radius: 5px;
+  border: 1px solid #ccc;
 }

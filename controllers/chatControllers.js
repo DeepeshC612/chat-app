@@ -17,14 +17,21 @@ const userList = async (data) => {
 };
 const addNewGroup = async (data) => {
   try {
-    const isGroupExists = await Group.findAll({
-      where: {
-        [Op.and]: [
-          { createdBy: { [Op.or]: [data.createdBy, data.toUserId] } },
-          { toUserId: { [Op.or]: [data.createdBy, data.toUserId] } },
-        ],
-      },
-    });
+    let isGroupExists;
+    if (data.popUp) {
+      isGroupExists = await Group.findAll({
+        where: { name: data.name },
+      });
+    } else {
+      isGroupExists = await Group.findAll({
+        where: {
+          [Op.and]: [
+            { createdBy: { [Op.or]: [data.createdBy, data.toUserId] } },
+            { toUserId: { [Op.or]: [data.createdBy, data.toUserId] } },
+          ],
+        },
+      });
+    }
     if (isGroupExists.length) {
       let roomName;
       isGroupExists.forEach((e) => {
@@ -32,9 +39,15 @@ const addNewGroup = async (data) => {
       });
       return roomName;
     } else {
+      delete data.popUp
       const newGroup = await Group.create(data);
       if (newGroup) {
-        return newGroup;
+      let roomName;
+      newGroup.forEach((e) => {
+        roomName = e.dataValues.name;
+      });
+      return roomName;
+      //return newGroup;
       } else {
         throw new Error();
       }
@@ -71,11 +84,9 @@ const userOnlineStatus = async (data, query) => {
       { isActive: query ? true : false },
       { where: { id: data } }
     );
-    if(result){
-      const findUser = await User.findAll(
-        { where: { id: data } }
-      );
-      return findUser
+    if (result) {
+      const findUser = await User.findAll({ where: { id: data } });
+      return findUser;
     } else {
       throw new Error();
     }
@@ -89,7 +100,7 @@ const getMessages = async (data) => {
     const findGroup = await Group.findOne({
       where: { name: data.roomName },
     });
-    if(findGroup){
+    if (findGroup) {
       const result = await GroupMessage.findAll({
         where: { groupId: findGroup.dataValues.id },
       });
@@ -103,14 +114,14 @@ const getMessages = async (data) => {
   }
 };
 
-const uploadImage = async (req, res) =>{
-  if(!req.file) {
+const uploadImage = async (req, res) => {
+  if (!req.file) {
     res.status(400).json({
       success: false,
-      message: "No file uploaded"
-    })
+      message: "No file uploaded",
+    });
   }
-  const imagePath = "/uploads/" + req.file.filename
+  const imagePath = "/uploads/" + req.file.filename;
   try {
     const findGroup = await Group.findOne({
       where: { name: req.body.roomName },
@@ -120,7 +131,7 @@ const uploadImage = async (req, res) =>{
         type: "media",
         userId: req.body.senderId,
         groupId: findGroup.id,
-        message: imagePath
+        message: imagePath,
       };
       const result = await GroupMessage.create(message);
       if (!result) {
@@ -128,13 +139,13 @@ const uploadImage = async (req, res) =>{
       }
       res.status(200).json({
         success: true,
-        message: result
-      })
+        message: result,
+      });
     }
   } catch (err) {
     throw new Error(err);
   }
-}
+};
 
 module.exports = {
   addNewGroup,
@@ -142,5 +153,5 @@ module.exports = {
   getMessages,
   userList,
   uploadImage,
-  userOnlineStatus
+  userOnlineStatus,
 };
