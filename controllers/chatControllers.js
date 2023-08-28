@@ -42,12 +42,7 @@ const addNewGroup = async (data) => {
       delete data.popUp
       const newGroup = await Group.create(data);
       if (newGroup) {
-      let roomName;
-      newGroup.forEach((e) => {
-        roomName = e.dataValues.name;
-      });
-      return roomName;
-      //return newGroup;
+      return newGroup.name;
       } else {
         throw new Error();
       }
