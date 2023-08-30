@@ -39,12 +39,26 @@ const addNewGroup = async (data) => {
       });
       return roomName;
     } else {
-      delete data.popUp
-      const newGroup = await Group.create(data);
-      if (newGroup) {
-      return newGroup.name;
+      if (data.toUserId.length) {
+        let newGroup;
+        for(const toUserId of data.toUserId) {
+          let userData = {
+            name: data.name,
+            toUserId: toUserId,
+            createdBy: data.createdBy,
+            type: "multiple",
+          };
+          newGroup = await Group.create(userData)
+        };
+        if(newGroup) {
+          return newGroup
+        }
       } else {
-        throw new Error();
+        delete data.popUp;
+        const newGroup = await Group.create(data);
+        if (newGroup) {
+          return newGroup;
+        }
       }
     }
   } catch (err) {

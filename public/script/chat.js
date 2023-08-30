@@ -65,7 +65,7 @@ document.addEventListener("DOMContentLoaded", function () {
         roomName:
           event.target.dataset.toUserEmail + event.target.dataset.userId,
         createdBy: userId,
-        popUp: false
+        popUp: false,
       });
       openChatInterface(clickedUserName);
     }
@@ -288,10 +288,25 @@ document.addEventListener("DOMContentLoaded", function () {
 
     socket.emit("clicked user", {
       toUserId: selectedUserIds,
-      roomName: groupName + '-' + userId + '-' + Date.now(),
+      roomName: groupName + "-" + userId + "-" + Date.now(),
       createdBy: userId,
-      popUp: true
-    })
+      popUp: true,
+    });
+    socket.on("send data", function (data) {
+      recipientUserId = data.toUserId;
+      roomName = data.roomName;
+      const userListContainer = document.getElementById("userList");
+      const userItem = document.createElement("div");
+      userItem.className = "user-item";
+      userItem.dataset.userId = data.roomId;
+      userItem.style.marginBlock = "5px";
+
+      const userName = document.createElement("span");
+      userName.textContent = groupName;
+
+      userItem.appendChild(userName);
+      userListContainer.appendChild(userItem);
+    });
     console.log("selected user id", selectedUserIds);
     console.log("Group Name:", groupName);
     closeUserSelectionPopup();
