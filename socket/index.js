@@ -5,8 +5,6 @@ const {
   userOnlineStatus,
   getMessages,
 } = require("../controllers/chatControllers");
-const uploadFiles = require("../middlewares/multiStoreMiddleware");
-const axios = require("axios")
 
 
 let socket = (server) => {
@@ -46,12 +44,14 @@ let socket = (server) => {
         };
         // Save user info to database
         const newGroup = await addNewGroup(userData);
+        console.log("newGroup", newGroup)
         if (newGroup) {
-          socket.join(newGroup);
+          socket.join(newGroup.name);
           // Send user information to the client
           socket.emit("send data", {
             toUserId: data.toUserId,
-            roomName: newGroup,
+            roomName: newGroup.name,
+            roomId: newGroup.id,
             createdBy: data.createdBy,
           });
         }
