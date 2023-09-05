@@ -17,7 +17,7 @@ document.addEventListener("DOMContentLoaded", function () {
     const userListContainer = document.getElementById("userList");
     userListContainer.innerHTML = "";
 
-    userList.forEach((user) => {
+    userList.userList.forEach((user) => {
       const userItem = document.createElement("div");
       userItem.className = "user-item";
       userItem.dataset.userId = user.id;
@@ -38,6 +38,32 @@ document.addEventListener("DOMContentLoaded", function () {
 
       userListContainer.appendChild(userItem);
     });
+    if (userList.groupList) {
+      const seen = {};
+      const uniqueArr = userList.groupList.filter((item) => {
+        const key = `${item.name}_${item.type}_${item.createdBy}`;
+        if (!seen[key]) {
+          seen[key] = true;
+          return true;
+        }
+        return false;
+      });
+      uniqueArr.forEach((user) => {
+        const userListContainer = document.getElementById("userList");
+        const userItem = document.createElement("div");
+        userItem.className = "user-item";
+        userItem.dataset.roomId = user.id;
+        userItem.dataset.type = "multiple";
+        userItem.dataset.roomName = user.name;
+        userItem.style.marginBlock = "5px";
+
+        const userName = document.createElement("span");
+        userName.textContent = user.name.split("-")[0];
+
+        userItem.appendChild(userName);
+        userListContainer.appendChild(userItem);
+      });
+    }
   }
 
   socket.on("user status", function (statusData) {
@@ -60,13 +86,23 @@ document.addEventListener("DOMContentLoaded", function () {
   document.addEventListener("click", function (event) {
     if (event.target && event.target.matches(".user-item")) {
       const clickedUserName = event.target.firstChild.textContent;
-      socket.emit("clicked user", {
-        toUserId: event.target.dataset.userId,
-        roomName:
-          event.target.dataset.toUserEmail + event.target.dataset.userId,
-        createdBy: userId,
-        popUp: false,
-      });
+      console.log(event.target.dataset);
+      if (event.target.dataset.type == "multiple") {
+        socket.emit("clicked user", {
+          toUserId: event.target.dataset.roomId,
+          roomName: event.target.dataset.roomName,
+          createdBy: userId,
+          popUp: true,
+        });
+      } else {
+        socket.emit("clicked user", {
+          toUserId: event.target.dataset.userId,
+          roomName:
+            event.target.dataset.toUserEmail + event.target.dataset.userId,
+          createdBy: userId,
+          popUp: false,
+        });
+      }
       openChatInterface(clickedUserName);
     }
   });
@@ -146,7 +182,7 @@ document.addEventListener("DOMContentLoaded", function () {
     }
   });
   socket.on("previous messages", function (messages) {
-    messages.forEach((message) => {
+    messages?.forEach((message) => {
       if (message.userId == userId) {
         if (message.type == "media") {
           displaySentImage(message.message);
@@ -298,7 +334,8 @@ document.addEventListener("DOMContentLoaded", function () {
       const userListContainer = document.getElementById("userList");
       const userItem = document.createElement("div");
       userItem.className = "user-item";
-      userItem.dataset.userId = data.roomId;
+      userItem.dataset.roomId = data.roomId;
+      userItem.dataset.type = "multiple";
       userItem.style.marginBlock = "5px";
 
       const userName = document.createElement("span");

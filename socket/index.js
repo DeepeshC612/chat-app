@@ -4,6 +4,7 @@ const {
   userList,
   userOnlineStatus,
   getMessages,
+  getGroup
 } = require("../controllers/chatControllers");
 
 
@@ -17,11 +18,16 @@ let socket = (server) => {
     socket.on("users", async (data) => {
       try {
         const usersList = await userList(data);
+        const groupList = await getGroup(data)
         if (usersList) {
           if(data.popUp){
             socket.emit("userListPopup", usersList);
           } else {
-            socket.emit("user list", usersList);
+            if(groupList.length){
+              socket.emit("user list", {userList: usersList, groupList: groupList});
+            } else {
+              socket.emit("user list", {userList: usersList});
+            }
           }
           socket.userId = data.userId;
           await userOnlineStatus(data.userId, true);
@@ -44,14 +50,13 @@ let socket = (server) => {
         };
         // Save user info to database
         const newGroup = await addNewGroup(userData);
-        console.log("newGroup", newGroup)
         if (newGroup) {
-          socket.join(newGroup.name);
+          console.log(newGroup)
+          socket.join(newGroup);
           // Send user information to the client
           socket.emit("send data", {
             toUserId: data.toUserId,
-            roomName: newGroup.name,
-            roomId: newGroup.id,
+            roomName: newGroup,
             createdBy: data.createdBy,
           });
         }
@@ -69,7 +74,6 @@ let socket = (server) => {
     });
 
     socket.on("get messages", async (data) => {
-      // Retrieve messages from the database based on roomName and senderId
       const messages = await getMessages(data);
       socket.emit("previous messages", messages);
     });
