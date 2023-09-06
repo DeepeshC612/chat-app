@@ -85,20 +85,26 @@ const getGroup = async (data) => {
 };
 const saveMessages = async (data) => {
   try {
-    const findGroup = await Group.findOne({
+    const findGroup = await Group.findAll({
       where: { name: data.roomName },
     });
-    if (findGroup) {
+    let ids =[];
+    if (findGroup.length) {
+      findGroup.forEach((e)=>{
+        if(e.type == "multiple"){
+          ids.push(e.toUserId)
+        }
+      })
       let message = {
         userId: data.senderId,
-        groupId: findGroup.id,
+        groupId: findGroup[0].id,
         message: data.value,
       };
       const result = await GroupMessage.create(message);
       if (!result) {
         throw new Error();
       }
-      return result;
+      return {result: result, ids: ids};
     }
   } catch (err) {
     throw new Error(err);

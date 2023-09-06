@@ -86,7 +86,6 @@ document.addEventListener("DOMContentLoaded", function () {
   document.addEventListener("click", function (event) {
     if (event.target && event.target.matches(".user-item")) {
       const clickedUserName = event.target.firstChild.textContent;
-      console.log(event.target.dataset);
       if (event.target.dataset.type == "multiple") {
         socket.emit("clicked user", {
           toUserId: event.target.dataset.roomId,
@@ -177,19 +176,19 @@ document.addEventListener("DOMContentLoaded", function () {
     });
 
   socket.on("receive message", function (data) {
-    if (data.senderId === recipientUserId) {
-      displayReceivedMessage(data.message);
-    }
+      if(data.senderId != userId){
+        displayReceivedMessage(data.message);
+      }
   });
   socket.on("previous messages", function (messages) {
-    messages?.forEach((message) => {
+    messages.forEach((message) => {
       if (message.userId == userId) {
         if (message.type == "media") {
           displaySentImage(message.message);
         } else {
           displaySentMessage(message.message);
         }
-      } else if (message.userId == recipientUserId) {
+      } else {
         if (message.type == "media") {
           displayReceivedImage(message.message);
         } else {
@@ -241,7 +240,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
   // Send image
   socket.on("receive image", function (data) {
-    if (data.senderId === recipientUserId) {
+    if (data.senderId !== userId) {
       displayReceivedImage(data.message);
     }
   });
@@ -372,6 +371,7 @@ document.addEventListener("DOMContentLoaded", function () {
     clearChatMessages();
     document.getElementById("chatInterface").style.display = "flex";
     document.getElementById("chatHeader").innerText = userName;
+    socket.off("send data");
     socket.on("send data", function (data) {
       recipientUserId = data.toUserId;
       roomName = data.roomName;
@@ -446,6 +446,8 @@ document.addEventListener("DOMContentLoaded", function () {
   }
   function clearChatMessages() {
     const chatMessagesDiv = document.getElementById("chatMessages");
-    chatMessagesDiv.innerHTML = ""; // Clear the messages
+    while (chatMessagesDiv.firstChild) {
+      chatMessagesDiv.removeChild(chatMessagesDiv.firstChild);
+    }
   }
 });

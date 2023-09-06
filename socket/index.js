@@ -4,9 +4,8 @@ const {
   userList,
   userOnlineStatus,
   getMessages,
-  getGroup
+  getGroup,
 } = require("../controllers/chatControllers");
-
 
 let socket = (server) => {
   const io = require("socket.io")(server, {
@@ -18,15 +17,18 @@ let socket = (server) => {
     socket.on("users", async (data) => {
       try {
         const usersList = await userList(data);
-        const groupList = await getGroup(data)
+        const groupList = await getGroup(data);
         if (usersList) {
-          if(data.popUp){
+          if (data.popUp) {
             socket.emit("userListPopup", usersList);
           } else {
-            if(groupList.length){
-              socket.emit("user list", {userList: usersList, groupList: groupList});
+            if (groupList.length) {
+              socket.emit("user list", {
+                userList: usersList,
+                groupList: groupList,
+              });
             } else {
-              socket.emit("user list", {userList: usersList});
+              socket.emit("user list", { userList: usersList });
             }
           }
           socket.userId = data.userId;
@@ -46,12 +48,11 @@ let socket = (server) => {
           name: data.roomName,
           toUserId: data.toUserId,
           createdBy: data.createdBy,
-          popUp: data.popUp
+          popUp: data.popUp,
         };
         // Save user info to database
         const newGroup = await addNewGroup(userData);
         if (newGroup) {
-          console.log(newGroup)
           socket.join(newGroup);
           // Send user information to the client
           socket.emit("send data", {
@@ -80,18 +81,19 @@ let socket = (server) => {
 
     socket.on("chat message", async (data) => {
       try {
-        if(data.image){
+        if (data.image) {
           io.to(data.roomName).emit("receive image", {
             message: data.message,
             senderId: data.senderId,
           });
         } else {
-          const result = await saveMessages(data);
-          if (result) {
+          const res = await saveMessages(data);
+          if (res.result) {
             // Broadcast the message to everyone in the room
             io.to(data.roomName).emit("receive message", {
               message: data.value,
               senderId: data.senderId,
+              recipientIds: res.ids,
             });
           }
         }
