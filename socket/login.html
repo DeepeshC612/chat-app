@@ -111,6 +111,7 @@
             password: password,
             userRole: "admin",
           });
+          console.log(res)
           if (res.status == 200) {
             localStorage.clear()
             localStorage.setItem("id", res.data.id);

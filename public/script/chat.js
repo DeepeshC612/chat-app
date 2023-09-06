@@ -132,7 +132,7 @@ document.addEventListener("DOMContentLoaded", function () {
         formData.append("senderId", userId);
         formData.append("roomName", roomName);
         axios
-          .post("http://localhost:8000/chat/upload-image", formData, {
+          .post("http://localhost/chat/upload-image", formData, {
             headers: {
               "Content-Type": "multipart/form-data",
             },

@@ -1,3 +1,4 @@
+const { rmSync } = require("fs");
 const models = require("../models/index");
 const { Group, GroupMessage, User, Sequelize } = models;
 const { Op } = require("sequelize");
@@ -142,16 +143,16 @@ const getMessages = async (data) => {
       });
       if (findGroup) {
         const result = await GroupMessage.findAll({
-          where: { groupId: findGroup.dataValues.id },
+          where: { groupId: findGroup?.dataValues?.id },
         });
-        await Promise.all(result.map(async (e, i)=>{
+        await Promise.all(result.map(async (e)=>{
           const findUser = await User.findAll({
             where: { id: e.userId }
           })
           if(findUser){
             e.dataValues.senderName = findUser[0].firstName + " " + findUser[0].lastName
           }
-        })) 
+        }))
         if (!result) {
           throw new Error();
         }
