@@ -161,20 +161,34 @@ body {
   cursor: pointer;
 }
 .user-item {
+  display: flex;
+  align-items: center;
+  padding: 10px;
   cursor: pointer;
   transition: transform 0.3s ease, opacity 0.3s ease;
+  position: relative;
 }
+.user-item::before {
+  content: ''; 
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 3px;
+  height: 100%;
+  background-color: #ccc; 
+}
+
 .user-item:hover {
   background-color: #f0f0f0;
   transform: scale(0.95);
-  opacity: 1.0;
+  opacity: 1;
   cursor: pointer;
 }
 .user-list {
   overflow-y: auto;
 }
 .left-panel {
-  width: 220px;
+  width: 300px;
   padding: 20px;
   background-color: #fffdfd;
   display: flex;
@@ -187,7 +201,7 @@ body {
   border-width: 2px 2px 2px 2px;
   border-radius: 50%;
   margin-top: 7px;
-  margin-left: 102px;
+  margin-left: 180px;
   object-fit: contain;
   align-content: center;
   background-color: #128c7e;
@@ -251,17 +265,17 @@ body {
   flex-direction: column;
 }
 .user-selection-popup {
-    display: none;
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background-color: rgba(255, 255, 255, 0.95); /* Semi-transparent background */
-    z-index: 2;
-    justify-content: center;
-    align-items: center;
-    flex-direction: column;
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(255, 255, 255, 0.95); /* Semi-transparent background */
+  z-index: 2;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
 }
 h2 {
   font-size: 24px;
@@ -270,13 +284,13 @@ h2 {
   color: #075e54; /* WhatsApp green */
 }
 .user-list-content {
-    background-color: #fff;
-    padding: 20px;
-    border-radius: 10px;
-    box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.5);
-    display: flex;
-    flex-direction: column;
-    align-items: center;
+  background-color: #fff;
+  padding: 20px;
+  border-radius: 10px;
+  box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.5);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
 .user-items span {
   margin-left: 10px;
@@ -290,7 +304,7 @@ input[type="checkbox"] {
 .create-group-button {
   margin-top: 15px;
   padding: 10px 20px;
-  background-color: #075e54; /* WhatsApp green */
+  background-color: #075e54;
   color: #fff;
   border: none;
   border-radius: 5px;
@@ -300,12 +314,12 @@ input[type="checkbox"] {
   transition: background-color 0.3s ease;
 }
 .create-group-button:hover {
-  background-color: #128c7e; /* Darker green on hover */
+  background-color: #128c7e;
 }
 .close-popup {
   margin-top: 15px;
   padding: 10px 20px;
-  background-color: #d9dbdb; /* WhatsApp gray */
+  background-color: #d9dbdb; 
   color: #000;
   border: none;
   border-radius: 5px;
@@ -315,7 +329,30 @@ input[type="checkbox"] {
   transition: background-color 0.3s ease;
 }
 .close-popup:hover {
-    background-color: #b6b8b8; /* Darker gray on hover */
+  background-color: #b6b8b8;
+}
+
+.profile-pic {
+  width: 40px; 
+  height: 40px; 
+  background-color: #ccc; 
+  background-image: url("/image/user-icon.jpg"); 
+  background-size: cover;
+  background-position: center;
+  border: 1px solid #ccc;
+  border-radius: 50%; 
+  margin-right: 10px;
+}
+.group-profile-pic {
+  width: 40px;
+  height: 40px;
+  background-color: #ffffff;
+  background-image: url("/image/people.png"); 
+  background-size: cover;
+  background-position: center;
+  border-radius: 50%;
+  border: 1px solid #ccc;
+  margin-right: 10px;
 }
 
 #groupNameInput {

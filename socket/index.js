@@ -94,6 +94,7 @@ let socket = (server) => {
               message: data.value,
               senderId: data.senderId,
               recipientIds: res.ids,
+              senderName: res.senderName
             });
           }
         }

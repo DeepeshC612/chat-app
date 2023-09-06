@@ -89,12 +89,19 @@ const saveMessages = async (data) => {
       where: { name: data.roomName },
     });
     let ids =[];
+    let senderName
     if (findGroup.length) {
       findGroup.forEach((e)=>{
         if(e.type == "multiple"){
           ids.push(e.toUserId)
         }
       })
+      const findUser = await User.findAll({
+        where: { id: data.senderId }
+      })
+      if(findUser){
+        senderName = findUser[0].firstName + " " + findUser[0].lastName
+      }
       let message = {
         userId: data.senderId,
         groupId: findGroup[0].id,
@@ -104,7 +111,7 @@ const saveMessages = async (data) => {
       if (!result) {
         throw new Error();
       }
-      return {result: result, ids: ids};
+      return {result: result, ids: ids, senderName: senderName};
     }
   } catch (err) {
     throw new Error(err);
@@ -137,6 +144,14 @@ const getMessages = async (data) => {
         const result = await GroupMessage.findAll({
           where: { groupId: findGroup.dataValues.id },
         });
+        await Promise.all(result.map(async (e, i)=>{
+          const findUser = await User.findAll({
+            where: { id: e.userId }
+          })
+          if(findUser){
+            e.dataValues.senderName = findUser[0].firstName + " " + findUser[0].lastName
+          }
+        })) 
         if (!result) {
           throw new Error();
         }

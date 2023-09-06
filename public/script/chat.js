@@ -24,17 +24,24 @@ document.addEventListener("DOMContentLoaded", function () {
       userItem.dataset.toUserEmail = user.email;
       userItem.style.marginBlock = "5px";
 
+      const userInfo = document.createElement("div");
+      userInfo.className = "user-info";
+      const userName = document.createElement("span");
+      userName.textContent = user.firstName + " " + user.lastName;
+
       const onlineStatus = document.createElement("span");
       onlineStatus.className = "online-status";
       onlineStatus.style.marginLeft = "5px"; // Add some spacing
       onlineStatus.textContent = user.isActive ? "Online" : "Offline";
       onlineStatus.style.color = user.isActive ? "green" : "gray";
 
-      const userName = document.createElement("span");
-      userItem.textContent = user.firstName + " " + user.lastName;
+      const profilePic = document.createElement("div");
+      profilePic.className = "profile-pic";
 
-      userItem.appendChild(userName);
-      userItem.appendChild(onlineStatus);
+      userInfo.appendChild(userName);
+      userInfo.appendChild(onlineStatus);
+      userItem.appendChild(profilePic);
+      userItem.appendChild(userInfo);
 
       userListContainer.appendChild(userItem);
     });
@@ -57,10 +64,16 @@ document.addEventListener("DOMContentLoaded", function () {
         userItem.dataset.roomName = user.name;
         userItem.style.marginBlock = "5px";
 
+        const userInfo = document.createElement("div");
+        userInfo.className = "user-info";
+        const profilePic = document.createElement("div");
+        profilePic.className = "group-profile-pic";
         const userName = document.createElement("span");
         userName.textContent = user.name.split("-")[0];
 
-        userItem.appendChild(userName);
+        userInfo.appendChild(userName);
+        userItem.appendChild(profilePic);
+        userItem.appendChild(userInfo);
         userListContainer.appendChild(userItem);
       });
     }
@@ -85,7 +98,9 @@ document.addEventListener("DOMContentLoaded", function () {
 
   document.addEventListener("click", function (event) {
     if (event.target && event.target.matches(".user-item")) {
-      const clickedUserName = event.target.firstChild.textContent;
+      const allSpans = event.target.querySelectorAll("span");
+      const clickedUserName = allSpans[0].textContent;
+      console.log(event.target);
       if (event.target.dataset.type == "multiple") {
         socket.emit("clicked user", {
           toUserId: event.target.dataset.roomId,
@@ -176,9 +191,9 @@ document.addEventListener("DOMContentLoaded", function () {
     });
 
   socket.on("receive message", function (data) {
-      if(data.senderId != userId){
-        displayReceivedMessage(data.message);
-      }
+    if (data.senderId != userId) {
+      displayReceivedMessage(data.message, data.senderName);
+    }
   });
   socket.on("previous messages", function (messages) {
     messages.forEach((message) => {
@@ -186,13 +201,13 @@ document.addEventListener("DOMContentLoaded", function () {
         if (message.type == "media") {
           displaySentImage(message.message);
         } else {
-          displaySentMessage(message.message);
+          displaySentMessage(message.message, message.senderName);
         }
       } else {
         if (message.type == "media") {
           displayReceivedImage(message.message);
         } else {
-          displayReceivedMessage(message.message);
+          displayReceivedMessage(message.message, message.senderName);
         }
       }
     });
@@ -269,6 +284,7 @@ document.addEventListener("DOMContentLoaded", function () {
     const userSelectionPopup = document.getElementById("userSelectionPopup");
     userSelectionPopup.style.display = "none";
     document.getElementById("groupNameInput").value = "";
+    document.getElementById("errorMsg").textContent = ""
   }
 
   //Display user list in popup
@@ -321,6 +337,7 @@ document.addEventListener("DOMContentLoaded", function () {
     const groupNameInput = document.getElementById("groupNameInput");
     const groupName = groupNameInput.value.trim();
 
+    if (groupName !== "" && selectedUserIds.length > 0) {
     socket.emit("clicked user", {
       toUserId: selectedUserIds,
       roomName: groupName + "-" + userId + "-" + Date.now(),
@@ -337,15 +354,29 @@ document.addEventListener("DOMContentLoaded", function () {
       userItem.dataset.type = "multiple";
       userItem.style.marginBlock = "5px";
 
+      const profilePic = document.createElement("div");
+      profilePic.className = "group-profile-pic";
+      const userInfo = document.createElement("div");
+      userInfo.className = "user-info";
       const userName = document.createElement("span");
       userName.textContent = groupName;
 
-      userItem.appendChild(userName);
+      userInfo.appendChild(userName);
+      userItem.appendChild(profilePic);
+      userItem.appendChild(userInfo);
       userListContainer.appendChild(userItem);
     });
     console.log("selected user id", selectedUserIds);
     console.log("Group Name:", groupName);
     closeUserSelectionPopup();
+  } else {
+    const userList = document.getElementById("user-list-content")
+    const errorMsg = document.createElement("div")
+    errorMsg.id = "errorMsg"
+    errorMsg.textContent = "Please enter a group name and select at least one user."
+    errorMsg.style.color = "red"
+    userList.appendChild(errorMsg)
+  }
   }
 
   // Enable create group function
@@ -425,13 +456,16 @@ document.addEventListener("DOMContentLoaded", function () {
   }
 
   // Display received message in the chat interface
-  function displayReceivedMessage(message) {
+  function displayReceivedMessage(message, senderName) {
     // Create and append the message element
     const messageDiv = document.createElement("div");
     messageDiv.className = "message you";
+    let userName = senderName
+      ? senderName
+      : document.getElementById("chatHeader").innerText;
     messageDiv.innerHTML = `
   <div class="content">
-    <h1>${document.getElementById("chatHeader").innerText}</h1>
+    <h1>${userName}</h1>
     <p>${message}</p>
   </div>
   <p class="time">${moment().format("hh:mm")}</p>
