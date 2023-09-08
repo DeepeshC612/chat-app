@@ -14,6 +14,9 @@ module.exports = (sequelize, DataTypes) => {
       type: {
         type: DataTypes.ENUM('text', 'media'),
         defaultValue: 'text'
+      },
+      status: {
+        type: DataTypes.ENUM('sent', 'delivered', 'seen'),
       }
     },
     {

@@ -5,8 +5,10 @@ document.addEventListener("DOMContentLoaded", function () {
   let recipientUserId;
   let roomName;
   var typing = false;
+  let isActive = [];
   var online = true;
   var timeout = undefined;
+  let count = 0;
 
   socket.emit("users", { userId: userId, popUp: false });
   socket.on("user list", function (userList) {
@@ -34,7 +36,7 @@ document.addEventListener("DOMContentLoaded", function () {
       onlineStatus.style.marginLeft = "5px"; // Add some spacing
       onlineStatus.textContent = user.isActive ? "Online" : "Offline";
       onlineStatus.style.color = user.isActive ? "green" : "gray";
-
+      isActive.push({ userId: user.id, isActive: user.isActive });
       const profilePic = document.createElement("div");
       profilePic.className = "profile-pic";
 
@@ -78,7 +80,6 @@ document.addEventListener("DOMContentLoaded", function () {
       });
     }
   }
-
   socket.on("user status", function (statusData) {
     // Update online status indicators when receiving a user status change
     const userItem = document.querySelector(
@@ -87,9 +88,35 @@ document.addEventListener("DOMContentLoaded", function () {
     if (userItem) {
       const onlineStatus = userItem.querySelector(".online-status");
       if (statusData.isOnline == true) {
+        isActive.forEach((e) => {
+          if (e.userId == statusData.userId) {
+            e.isActive = true;
+          }
+        });
+        socket.on("messageSent", (messages) => {
+          messages?.forEach((message) => {
+            if (
+              message.status == "sent" &&
+              message.type == "text" &&
+              message.userId == userId
+            ) {
+              let data = document.querySelector(`[data-message-id="${message.id}"]`);
+              if (data) {
+                let blueTickDiv = data.querySelector(".blueTickDiv");
+                blueTickDiv.childNodes[2].nextSibling.src = "http://localhost:8000/image/read.png"
+                // blueTickDiv.appendChild(readRecipient);
+              }
+            }
+          });
+        });
         onlineStatus.textContent = "Online";
         onlineStatus.style.color = "green"; // Set the color to indicate online status
       } else {
+        isActive.forEach((e) => {
+          if (e.userId == statusData.userId) {
+            e.isActive = false;
+          }
+        });
         onlineStatus.textContent = "Offline";
         onlineStatus.style.color = "gray"; // Set the color to indicate offline status
       }
@@ -100,7 +127,6 @@ document.addEventListener("DOMContentLoaded", function () {
     if (event.target && event.target.matches(".user-item")) {
       const allSpans = event.target.querySelectorAll("span");
       const clickedUserName = allSpans[0].textContent;
-      console.log(event.target);
       if (event.target.dataset.type == "multiple") {
         socket.emit("clicked user", {
           toUserId: event.target.dataset.roomId,
@@ -147,6 +173,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 message: data.data.message.message,
                 senderId: data.data.message.userId,
                 roomName: roomName,
+                status: "sent",
               });
               displaySentImage(data.data.message.message);
               const imageInput = document.getElementById("imageInput");
@@ -157,8 +184,11 @@ document.addEventListener("DOMContentLoaded", function () {
                   value: messageValue,
                   recipientId: recipientUserId,
                   senderId: userId,
+                  status: "sent",
                 });
-                displaySentMessage(messageValue);
+                socket.on("sendedMsg", (messageId) => {
+                  displaySentMessage(messageValue, "sent", messageId);
+                });
                 document.getElementById("chatInput").value = "";
               }
             }
@@ -174,8 +204,11 @@ document.addEventListener("DOMContentLoaded", function () {
             value: messageValue,
             recipientId: recipientUserId,
             senderId: userId,
+            status: "sent",
           });
-          displaySentMessage(messageValue);
+          socket.on("sendedMsg", (messageId) => {
+            displaySentMessage(messageValue, "sent", messageId);
+          });
           document.getElementById("chatInput").value = "";
         }
       }
@@ -201,7 +234,7 @@ document.addEventListener("DOMContentLoaded", function () {
         if (message.type == "media") {
           displaySentImage(message.message);
         } else {
-          displaySentMessage(message.message, message.senderName);
+          displaySentMessage(message.message, message.status, message.id);
         }
       } else {
         if (message.type == "media") {
@@ -284,7 +317,7 @@ document.addEventListener("DOMContentLoaded", function () {
     const userSelectionPopup = document.getElementById("userSelectionPopup");
     userSelectionPopup.style.display = "none";
     document.getElementById("groupNameInput").value = "";
-    document.getElementById("errorMsg").textContent = ""
+    document.getElementById("errorMsg").textContent = "";
   }
 
   //Display user list in popup
@@ -338,45 +371,46 @@ document.addEventListener("DOMContentLoaded", function () {
     const groupName = groupNameInput.value.trim();
 
     if (groupName !== "" && selectedUserIds.length > 0) {
-    socket.emit("clicked user", {
-      toUserId: selectedUserIds,
-      roomName: groupName + "-" + userId + "-" + Date.now(),
-      createdBy: userId,
-      popUp: true,
-    });
-    socket.on("send data", function (data) {
-      recipientUserId = data.toUserId;
-      roomName = data.roomName;
-      const userListContainer = document.getElementById("userList");
-      const userItem = document.createElement("div");
-      userItem.className = "user-item";
-      userItem.dataset.roomId = data.roomId;
-      userItem.dataset.type = "multiple";
-      userItem.style.marginBlock = "5px";
+      socket.emit("clicked user", {
+        toUserId: selectedUserIds,
+        roomName: groupName + "-" + userId + "-" + Date.now(),
+        createdBy: userId,
+        popUp: true,
+      });
+      socket.on("send data", function (data) {
+        recipientUserId = data.toUserId;
+        roomName = data.roomName;
+        const userListContainer = document.getElementById("userList");
+        const userItem = document.createElement("div");
+        userItem.className = "user-item";
+        userItem.dataset.roomId = data.roomId;
+        userItem.dataset.type = "multiple";
+        userItem.style.marginBlock = "5px";
 
-      const profilePic = document.createElement("div");
-      profilePic.className = "group-profile-pic";
-      const userInfo = document.createElement("div");
-      userInfo.className = "user-info";
-      const userName = document.createElement("span");
-      userName.textContent = groupName;
+        const profilePic = document.createElement("div");
+        profilePic.className = "group-profile-pic";
+        const userInfo = document.createElement("div");
+        userInfo.className = "user-info";
+        const userName = document.createElement("span");
+        userName.textContent = groupName;
 
-      userInfo.appendChild(userName);
-      userItem.appendChild(profilePic);
-      userItem.appendChild(userInfo);
-      userListContainer.appendChild(userItem);
-    });
-    console.log("selected user id", selectedUserIds);
-    console.log("Group Name:", groupName);
-    closeUserSelectionPopup();
-  } else {
-    const userList = document.getElementById("user-list-content")
-    const errorMsg = document.createElement("div")
-    errorMsg.id = "errorMsg"
-    errorMsg.textContent = "Please enter a group name and select at least one user."
-    errorMsg.style.color = "red"
-    userList.appendChild(errorMsg)
-  }
+        userInfo.appendChild(userName);
+        userItem.appendChild(profilePic);
+        userItem.appendChild(userInfo);
+        userListContainer.appendChild(userItem);
+      });
+      console.log("selected user id", selectedUserIds);
+      console.log("Group Name:", groupName);
+      closeUserSelectionPopup();
+    } else {
+      const userList = document.getElementById("user-list-content");
+      const errorMsg = document.createElement("div");
+      errorMsg.id = "errorMsg";
+      errorMsg.textContent =
+        "Please enter a group name and select at least one user.";
+      errorMsg.style.color = "red";
+      userList.appendChild(errorMsg);
+    }
   }
 
   // Enable create group function
@@ -440,21 +474,47 @@ document.addEventListener("DOMContentLoaded", function () {
     scrollToBottom();
   }
 
-  function displaySentMessage(message) {
-    // Create and append the message element
+  socket.on("messageSent", (messages) => {
+    messages?.forEach((message) => {
+      if (
+        message.status == "sent" &&
+        message.type == "text" &&
+        message.userId == userId
+      ) {
+        let readRecipient = document.createElement("img");
+        readRecipient.src = "/image/check.png";
+        readRecipient.style.height = "10px";
+        readRecipient.style.width = "10px";
+        readRecipient.alt = "Read_Recipient";
+        readRecipient.id = "Read_Recipient";
+        readRecipient.style.marginTop = "12px";
+        readRecipient.style.marginLeft = "5px";
+
+        let data = document.querySelector(`[data-message-id="${message.id}"]`);
+        if (data) {
+          const blueTickDiv = data.querySelector(".blueTickDiv");
+          blueTickDiv.appendChild(readRecipient);
+        }
+      }
+    });
+  });
+
+  function displaySentMessage(message, status, messageId) {
     const messageDiv = document.createElement("div");
     messageDiv.className = "message me";
+    messageDiv.id = "message me";
     messageDiv.innerHTML = `
-  <div class="content">
+    <div class="content" id="content">
     <h1>${username}</h1>
+    <div class="blueTickDiv" id="blueTickDiv">
     <p>${message}</p>
-  </div>
-  <p class="time">${moment().format("hh:mm")}</p>
-`;
+    </div>
+    </div>
+    <p class="time">${moment().format("hh:mm")}</p>`;
+    messageDiv.dataset.messageId = messageId;
     document.getElementById("chatMessages").appendChild(messageDiv);
     scrollToBottom();
   }
-
   // Display received message in the chat interface
   function displayReceivedMessage(message, senderName) {
     // Create and append the message element

@@ -1,7 +1,9 @@
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800;900&display=swap');
+
 body {
-  font-family: sans-serif;
   margin: 0;
   padding: 0;
+  font-family: 'Poppins', sans-serif;
 }
 .chat-container {
   display: flex;
@@ -40,6 +42,7 @@ body {
 .message .content p {
   text-align: right;
   margin: 5px;
+  font-size: 15px;
 }
 .message .content h1 {
   text-align: right;
@@ -221,7 +224,7 @@ body {
   border-width: 2px 2px 2px 2px;
   border-radius: 50%;
   margin-top: 7px;
-  margin-left: 180px;
+  margin-left: 170px;
   display: flex;
   justify-content: flex-end;
   object-fit: contain;
@@ -300,7 +303,7 @@ body {
   flex-direction: column;
 }
 h2 {
-  font-size: 24px;
+  font-size: 15px;
   margin-bottom: 15px;
   font-weight: bold;
   color: #075e54; /* WhatsApp green */
@@ -316,7 +319,7 @@ h2 {
 }
 .user-items span {
   margin-left: 10px;
-  font-size: 15px;
+  font-size: 10px;
 }
 input[type="checkbox"] {
   width: 20px;
@@ -377,9 +380,25 @@ input[type="checkbox"] {
   margin-right: 10px;
 }
 
+.groupName {
+ font-size: medium;
+ display: flex;
+ align-items: flex-start;
+ align-self: flex-start;
+}
+
+.user-info span {
+  font-size: 15px;
+}
 #groupNameInput {
   flex-grow: 1;
   padding: 8px;
   border-radius: 5px;
   border: 1px solid #ccc;
+}
+
+.blueTickDiv {
+  display: flex;
+  flex-direction: row;
+  justify-content: flex-end;
 }

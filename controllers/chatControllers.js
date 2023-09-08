@@ -107,6 +107,7 @@ const saveMessages = async (data) => {
         userId: data.senderId,
         groupId: findGroup[0].id,
         message: data.value,
+        status: data.status
       };
       const result = await GroupMessage.create(message);
       if (!result) {
