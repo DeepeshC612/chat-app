@@ -5,6 +5,7 @@ const {
   userOnlineStatus,
   getMessages,
   getGroup,
+  getRoomMessages,
 } = require("../controllers/chatControllers");
 
 let room = {};
@@ -32,6 +33,12 @@ let socket = (server) => {
               socket.emit("user list", { userList: usersList });
             }
           }
+          usersList.forEach(async (e) => {
+            let msg = await getRoomMessages({ userId: data.userId, id: e.id });
+              if(msg){
+                socket.emit("messageDelivered", { userId: e.id, message: msg });
+              }
+          });
           socket.userId = data.userId;
           await userOnlineStatus(data.userId, true);
           io.emit("user status", {
@@ -54,7 +61,7 @@ let socket = (server) => {
         // Save user info to database
         const newGroup = await addNewGroup(userData);
         if (newGroup) {
-          room.roomName = newGroup
+          room.roomName = newGroup;
           socket.join(newGroup);
           // Send user information to the client
           socket.emit("send data", {
@@ -79,7 +86,7 @@ let socket = (server) => {
     socket.on("get messages", async (data) => {
       const messages = await getMessages(data);
       socket.emit("previous messages", messages);
-      socket.emit("messageSent", messages)
+      socket.emit("messageSent", messages);
     });
 
     socket.on("chat message", async (data) => {
@@ -92,15 +99,15 @@ let socket = (server) => {
         } else {
           const res = await saveMessages(data);
           if (res.result) {
-            socket.emit("sendedMsg", res.result.id)
+            socket.emit("sendedMsg", res.result.id);
             // Broadcast the message to everyone in the room
             io.to(data.roomName).emit("receive message", {
               message: data.value,
               senderId: data.senderId,
               recipientIds: res.ids,
-              senderName: res.senderName
+              senderName: res.senderName,
             });
-            socket.emit("messageSent", res.result)
+            socket.emit("messageSent", res.result);
           }
         }
       } catch (err) {
@@ -118,16 +125,16 @@ let socket = (server) => {
         // if(room?.roomName){
         //   messages = await getMessages(room)
         // }
-        socket.on("get messages", async (data) => {
-          const messages = await getMessages(data);
-          socket.emit("previous messages", messages);
-          socket.emit("messageSent", messages)
+        // socket.on("get messages", async (data) => {
+        //   const messages = await getMessages(data);
+        //   socket.emit("previous messages", messages);
+        //   socket.emit("messageSent", messages);
           socket.broadcast.emit("user status", {
             userId: disconnectedClient,
             isOnline: false,
             // messages: messages
           });
-        });
+        // });
         socket.leave(socket.id);
       }
     });

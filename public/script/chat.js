@@ -93,24 +93,8 @@ document.addEventListener("DOMContentLoaded", function () {
             e.isActive = true;
           }
         });
-        socket.on("messageSent", (messages) => {
-          messages?.forEach((message) => {
-            if (
-              message.status == "sent" &&
-              message.type == "text" &&
-              message.userId == userId
-            ) {
-              let data = document.querySelector(`[data-message-id="${message.id}"]`);
-              if (data) {
-                let blueTickDiv = data.querySelector(".blueTickDiv");
-                blueTickDiv.childNodes[2].nextSibling.src = "http://localhost:8000/image/read.png"
-                // blueTickDiv.appendChild(readRecipient);
-              }
-            }
-          });
-        });
         onlineStatus.textContent = "Online";
-        onlineStatus.style.color = "green"; // Set the color to indicate online status
+        onlineStatus.style.color = "green";
       } else {
         isActive.forEach((e) => {
           if (e.userId == statusData.userId) {
@@ -187,7 +171,13 @@ document.addEventListener("DOMContentLoaded", function () {
                   status: "sent",
                 });
                 socket.on("sendedMsg", (messageId) => {
-                  displaySentMessage(messageValue, "sent", messageId);
+                  let msgStatus = "sent";
+                  isActive.forEach((e) => {
+                    if (e.isActive == true && recipientUserId == e.userId) {
+                      msgStatus = "delivered";
+                    }
+                  });
+                  displaySentMessage(messageValue, msgStatus, messageId);
                 });
                 document.getElementById("chatInput").value = "";
               }
@@ -196,7 +186,7 @@ document.addEventListener("DOMContentLoaded", function () {
           .catch((err) => {
             console.error("Error uploading file", err);
           });
-      } else {
+        } else {
         let messageValue = document.getElementById("chatInput").value.trim();
         if (messageValue !== "") {
           socket.emit("chat message", {
@@ -207,7 +197,13 @@ document.addEventListener("DOMContentLoaded", function () {
             status: "sent",
           });
           socket.on("sendedMsg", (messageId) => {
-            displaySentMessage(messageValue, "sent", messageId);
+            let msgStatus = "sent";
+            isActive.forEach((e) => {
+              if (e.isActive == true && recipientUserId == e.userId) {
+                msgStatus = "delivered";
+              }
+            });
+            displaySentMessage(messageValue, msgStatus, messageId);
           });
           document.getElementById("chatInput").value = "";
         }
@@ -234,6 +230,7 @@ document.addEventListener("DOMContentLoaded", function () {
         if (message.type == "media") {
           displaySentImage(message.message);
         } else {
+          console.log(message);
           displaySentMessage(message.message, message.status, message.id);
         }
       } else {
@@ -445,6 +442,7 @@ document.addEventListener("DOMContentLoaded", function () {
         senderId: userId,
       });
     });
+
     scrollToBottom();
   }
 
@@ -474,29 +472,39 @@ document.addEventListener("DOMContentLoaded", function () {
     scrollToBottom();
   }
 
-  socket.on("messageSent", (messages) => {
-    messages?.forEach((message) => {
-      if (
-        message.status == "sent" &&
-        message.type == "text" &&
-        message.userId == userId
-      ) {
-        let readRecipient = document.createElement("img");
-        readRecipient.src = "/image/check.png";
-        readRecipient.style.height = "10px";
-        readRecipient.style.width = "10px";
-        readRecipient.alt = "Read_Recipient";
-        readRecipient.id = "Read_Recipient";
-        readRecipient.style.marginTop = "12px";
-        readRecipient.style.marginLeft = "5px";
-
-        let data = document.querySelector(`[data-message-id="${message.id}"]`);
-        if (data) {
-          const blueTickDiv = data.querySelector(".blueTickDiv");
-          blueTickDiv.appendChild(readRecipient);
+  function doubleTick(data) {
+    if (data.message.length) {
+      data?.message?.forEach(async (message) => {
+        if (
+          message.status == "delivered" &&
+          message.type == "text" &&
+          data.userId == message.userId
+        ) {
+          console.log("helo helo");
+          let msg = document.querySelector(`[data-message-id="${message.id}"]`);
+          console.log("data", msg); // returning null
+          if (msg) {
+            let blueTickDiv = msg.querySelector(".blueTickDiv");
+            blueTickDiv.childNodes[2].nextSibling.src =
+              "http://localhost:8000/image/read.png";
+          }
         }
-      }
-    });
+      });
+    }
+  }
+
+  socket.on("messageSent", (data) => {
+    // data?.forEach((message) => {
+    //   if (message.status == "delivered" && message.type == "text") {
+    //     let msg = document.querySelector(`[data-message-id="${message.id}"]`);
+    //     if (msg) {
+    //       const blueTickDiv = msg.querySelector("img#Read_Recipient");
+    //       if (blueTickDiv) {
+    //         blueTickDiv.src = "/image/read.png";
+    //       }
+    //     }
+    //   }
+    // });
   });
 
   function displaySentMessage(message, status, messageId) {
@@ -508,6 +516,9 @@ document.addEventListener("DOMContentLoaded", function () {
     <h1>${username}</h1>
     <div class="blueTickDiv" id="blueTickDiv">
     <p>${message}</p>
+    <img src="${
+      status == "sent" ? "/image/check.png" : "/image/read.png"
+    }" id="Read_Recipient" alt="Read_Recipient" style="margin-top:12px; margin-left:5px; height:10px; width:10px">
     </div>
     </div>
     <p class="time">${moment().format("hh:mm")}</p>`;

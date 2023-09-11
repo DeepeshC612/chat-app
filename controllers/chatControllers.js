@@ -1,4 +1,3 @@
-const { rmSync } = require("fs");
 const models = require("../models/index");
 const { Group, GroupMessage, User, Sequelize } = models;
 const { Op } = require("sequelize");
@@ -21,13 +20,13 @@ const addNewGroup = async (data) => {
     let isGroupExists;
     if (data.popUp) {
       isGroupExists = await Group.findAll({
-        where: { name: data.name, type: 'multiple' },
+        where: { name: data.name, type: "multiple" },
       });
     } else {
       isGroupExists = await Group.findAll({
         where: {
           [Op.and]: [
-            { type: 'single' },
+            { type: "single" },
             { createdBy: { [Op.or]: [data.createdBy, data.toUserId] } },
             { toUserId: { [Op.or]: [data.createdBy, data.toUserId] } },
           ],
@@ -69,17 +68,17 @@ const addNewGroup = async (data) => {
 };
 const getGroup = async (data) => {
   try {
-      const groupList = await Group.findAll({
-        where: {
-          type: "multiple",
-          [Op.or]: [{ createdBy: data.userId }, { toUserId: data.userId }],
-        },
-      });
-      if(groupList){
-        return groupList
-      } else {
-        throw new Error()
-      }
+    const groupList = await Group.findAll({
+      where: {
+        type: "multiple",
+        [Op.or]: [{ createdBy: data.userId }, { toUserId: data.userId }],
+      },
+    });
+    if (groupList) {
+      return groupList;
+    } else {
+      throw new Error();
+    }
   } catch (err) {
     throw new Error(err);
   }
@@ -89,31 +88,40 @@ const saveMessages = async (data) => {
     const findGroup = await Group.findAll({
       where: { name: data.roomName },
     });
-    let ids =[];
-    let senderName
+    let ids = [];
+    let roomName = [];
+    let senderName;
+    let res = []
     if (findGroup.length) {
-      findGroup.forEach((e)=>{
-        if(e.type == "multiple"){
-          ids.push(e.toUserId)
+      findGroup.forEach((e) => {
+        roomName.push(e.name);
+        if (e.type == "multiple") {
+          ids.push(e.toUserId);
         }
-      })
+      });
       const findUser = await User.findAll({
-        where: { id: data.senderId }
-      })
-      if(findUser){
-        senderName = findUser[0].firstName + " " + findUser[0].lastName
+        where: { id: data.senderId },
+      });
+      if (findUser) {
+        senderName = findUser[0].firstName + " " + findUser[0].lastName;
       }
       let message = {
         userId: data.senderId,
         groupId: findGroup[0].id,
         message: data.value,
-        status: data.status
+        status: data.status,
       };
       const result = await GroupMessage.create(message);
+      res.push(result)
       if (!result) {
         throw new Error();
       }
-      return {result: result, ids: ids, senderName: senderName};
+      return {
+        result: res,
+        ids: ids,
+        senderName: senderName,
+        roomName: roomName,
+      };
     }
   } catch (err) {
     throw new Error(err);
@@ -139,33 +147,81 @@ const userOnlineStatus = async (data, query) => {
 
 const getMessages = async (data) => {
   try {
-      const findGroup = await Group.findOne({
-        where: { name: data.roomName },
+    const findGroup = await Group.findOne({
+      where: { name: data.roomName },
+    });
+    if (findGroup) {
+      const result = await GroupMessage.findAll({
+        where: { groupId: findGroup?.dataValues?.id },
       });
-      if (findGroup) {
-        const result = await GroupMessage.findAll({
-          where: { groupId: findGroup?.dataValues?.id },
-        });
-        await Promise.all(result.map(async (e)=>{
+      await Promise.all(
+        result.map(async (e) => {
           const findUser = await User.findAll({
-            where: { id: e.userId }
-          })
-          if(findUser){
-            e.dataValues.senderName = findUser[0].firstName + " " + findUser[0].lastName
+            where: { id: e.userId },
+          });
+          if (findUser) {
+            e.dataValues.senderName =
+              findUser[0].firstName + " " + findUser[0].lastName;
           }
-        }))
-        if (!result) {
-          throw new Error();
-        }
-        return result;
-      } else {
+        })
+      );
+      if (!result) {
         throw new Error();
       }
+      return result;
+    } else {
+      throw new Error();
+    }
+  } catch (err) {
+    throw new Error(err);
+  }
+};
+const getRoomMessages = async (data) => {
+  try {
+    let result = [];
+    const findGroup = await Group.findAll({
+      where: {
+        [Op.and]: [
+          { type: "single" },
+          { createdBy: { [Op.or]: [data.userId, data.id] } },
+          { toUserId: { [Op.or]: [data.userId, data.id] } },
+        ],
+      },
+    });
+    if (findGroup.length) {
+      await Promise.all(
+        findGroup.map(async (ele) => {
+          let findMsg = await getResult(ele, data.userId);
+          if (findMsg.length) {
+            return result = findMsg;
+          }
+        })
+      );
+      if (result) {
+        return result;
+      }
+    } else {
+      throw new Error();
+    }
   } catch (err) {
     throw new Error(err);
   }
 };
 
+const getResult = async (e, id) => {
+  const result = await GroupMessage.findAll({
+    where: { groupId: e.id, userId: { [Op.ne]:id }},
+  });
+  if (!result) {
+    throw new Error();
+  } else {
+    await GroupMessage.update(
+      { status: "delivered" },
+      { where: { groupId: e.id } }
+    );
+    return result;
+  }
+};
 const uploadImage = async (req, res) => {
   if (!req.file) {
     res.status(400).json({
@@ -206,5 +262,6 @@ module.exports = {
   userList,
   uploadImage,
   userOnlineStatus,
-  getGroup
+  getGroup,
+  getRoomMessages,
 };
