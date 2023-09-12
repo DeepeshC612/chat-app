@@ -170,7 +170,7 @@ document.addEventListener("DOMContentLoaded", function () {
                   senderId: userId,
                   status: "sent",
                 });
-                socket.on("sendedMsg", (messageId) => {
+                socket.on("sendedMsgImg", (messageId) => {
                   let msgStatus = "sent";
                   isActive.forEach((e) => {
                     if (e.isActive == true && recipientUserId == e.userId) {
@@ -186,7 +186,7 @@ document.addEventListener("DOMContentLoaded", function () {
           .catch((err) => {
             console.error("Error uploading file", err);
           });
-        } else {
+      } else {
         let messageValue = document.getElementById("chatInput").value.trim();
         if (messageValue !== "") {
           socket.emit("chat message", {
@@ -203,7 +203,11 @@ document.addEventListener("DOMContentLoaded", function () {
                 msgStatus = "delivered";
               }
             });
-            displaySentMessage(messageValue, msgStatus, messageId);
+            displaySentMessage(
+              messageId[0].message,
+              msgStatus,
+              messageId[0].id
+            );
           });
           document.getElementById("chatInput").value = "";
         }
@@ -230,7 +234,6 @@ document.addEventListener("DOMContentLoaded", function () {
         if (message.type == "media") {
           displaySentImage(message.message);
         } else {
-          console.log(message);
           displaySentMessage(message.message, message.status, message.id);
         }
       } else {
@@ -396,8 +399,6 @@ document.addEventListener("DOMContentLoaded", function () {
         userItem.appendChild(userInfo);
         userListContainer.appendChild(userItem);
       });
-      console.log("selected user id", selectedUserIds);
-      console.log("Group Name:", groupName);
       closeUserSelectionPopup();
     } else {
       const userList = document.getElementById("user-list-content");
@@ -472,41 +473,6 @@ document.addEventListener("DOMContentLoaded", function () {
     scrollToBottom();
   }
 
-  function doubleTick(data) {
-    if (data.message.length) {
-      data?.message?.forEach(async (message) => {
-        if (
-          message.status == "delivered" &&
-          message.type == "text" &&
-          data.userId == message.userId
-        ) {
-          console.log("helo helo");
-          let msg = document.querySelector(`[data-message-id="${message.id}"]`);
-          console.log("data", msg); // returning null
-          if (msg) {
-            let blueTickDiv = msg.querySelector(".blueTickDiv");
-            blueTickDiv.childNodes[2].nextSibling.src =
-              "http://localhost:8000/image/read.png";
-          }
-        }
-      });
-    }
-  }
-
-  socket.on("messageSent", (data) => {
-    // data?.forEach((message) => {
-    //   if (message.status == "delivered" && message.type == "text") {
-    //     let msg = document.querySelector(`[data-message-id="${message.id}"]`);
-    //     if (msg) {
-    //       const blueTickDiv = msg.querySelector("img#Read_Recipient");
-    //       if (blueTickDiv) {
-    //         blueTickDiv.src = "/image/read.png";
-    //       }
-    //     }
-    //   }
-    // });
-  });
-
   function displaySentMessage(message, status, messageId) {
     const messageDiv = document.createElement("div");
     messageDiv.className = "message me";
@@ -524,7 +490,30 @@ document.addEventListener("DOMContentLoaded", function () {
     <p class="time">${moment().format("hh:mm")}</p>`;
     messageDiv.dataset.messageId = messageId;
     document.getElementById("chatMessages").appendChild(messageDiv);
+    removeDuplicate();
     scrollToBottom();
+  }
+
+  function removeDuplicate() {
+    const container = document.getElementById("chatMessages");
+    const elements = Array.from(container.children);
+    const uniqueElements = [];
+    elements.forEach((element) => {
+      const elementContent = element.textContent;
+      if(element.innerHTML.startsWith('<img')){
+        uniqueElements.push(element)
+      }
+      const isDuplicate = uniqueElements.some((uniqueElement) => {
+        return uniqueElement.textContent === elementContent;
+      });
+      if (!isDuplicate) {
+        uniqueElements.push(element);
+      }
+    });
+    container.innerHTML = "";
+    uniqueElements.forEach((uniqueElement) => {
+      container.appendChild(uniqueElement);
+    });
   }
   // Display received message in the chat interface
   function displayReceivedMessage(message, senderName) {

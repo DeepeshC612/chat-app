@@ -34,10 +34,7 @@ let socket = (server) => {
             }
           }
           usersList.forEach(async (e) => {
-            let msg = await getRoomMessages({ userId: data.userId, id: e.id });
-              if(msg){
-                socket.emit("messageDelivered", { userId: e.id, message: msg });
-              }
+            let msg = await getRoomMessages({ userId: data.userId, id: e.id, isActive: e.isActive });
           });
           socket.userId = data.userId;
           await userOnlineStatus(data.userId, true);
@@ -86,7 +83,6 @@ let socket = (server) => {
     socket.on("get messages", async (data) => {
       const messages = await getMessages(data);
       socket.emit("previous messages", messages);
-      socket.emit("messageSent", messages);
     });
 
     socket.on("chat message", async (data) => {
@@ -99,7 +95,8 @@ let socket = (server) => {
         } else {
           const res = await saveMessages(data);
           if (res.result) {
-            socket.emit("sendedMsg", res.result.id);
+            socket.emit("sendedMsgImg", res.result.id);
+            socket.emit("sendedMsg", res.result);
             // Broadcast the message to everyone in the room
             io.to(data.roomName).emit("receive message", {
               message: data.value,
@@ -107,7 +104,6 @@ let socket = (server) => {
               recipientIds: res.ids,
               senderName: res.senderName,
             });
-            socket.emit("messageSent", res.result);
           }
         }
       } catch (err) {
@@ -120,19 +116,9 @@ let socket = (server) => {
       const disconnectedClient = socket.userId;
       if (disconnectedClient) {
         await userOnlineStatus(disconnectedClient, false);
-        // let messages
-        // console.log(room)
-        // if(room?.roomName){
-        //   messages = await getMessages(room)
-        // }
-        // socket.on("get messages", async (data) => {
-        //   const messages = await getMessages(data);
-        //   socket.emit("previous messages", messages);
-        //   socket.emit("messageSent", messages);
           socket.broadcast.emit("user status", {
             userId: disconnectedClient,
             isOnline: false,
-            // messages: messages
           });
         // });
         socket.leave(socket.id);

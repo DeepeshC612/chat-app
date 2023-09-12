@@ -91,7 +91,7 @@ const saveMessages = async (data) => {
     let ids = [];
     let roomName = [];
     let senderName;
-    let res = []
+    let res = [];
     if (findGroup.length) {
       findGroup.forEach((e) => {
         roomName.push(e.name);
@@ -112,7 +112,7 @@ const saveMessages = async (data) => {
         status: data.status,
       };
       const result = await GroupMessage.create(message);
-      res.push(result)
+      res.push(result);
       if (!result) {
         throw new Error();
       }
@@ -191,9 +191,14 @@ const getRoomMessages = async (data) => {
     if (findGroup.length) {
       await Promise.all(
         findGroup.map(async (ele) => {
-          let findMsg = await getResult(ele, data.userId);
+          let findMsg = await getResult(
+            ele,
+            data.userId,
+            data.id,
+            data.isActive
+          );
           if (findMsg.length) {
-            return result = findMsg;
+            return (result = findMsg);
           }
         })
       );
@@ -208,20 +213,30 @@ const getRoomMessages = async (data) => {
   }
 };
 
-const getResult = async (e, id) => {
+const getResult = async (e, userId, id, isActive) => {
   const result = await GroupMessage.findAll({
-    where: { groupId: e.id, userId: { [Op.ne]:id }},
+    where: { groupId: e.id },
   });
   if (!result) {
     throw new Error();
   } else {
-    await GroupMessage.update(
-      { status: "delivered" },
-      { where: { groupId: e.id } }
-    );
+    if (isActive == true) {
+      await GroupMessage.update(
+        { status: "delivered" },
+        {
+          where: {
+            [Op.and]: [
+              { groupId: e.id },
+              { userId: { [Op.or]: [userId, id] } },
+            ],
+          },
+        }
+      );
+    }
     return result;
   }
 };
+
 const uploadImage = async (req, res) => {
   if (!req.file) {
     res.status(400).json({
@@ -240,6 +255,7 @@ const uploadImage = async (req, res) => {
         userId: req.body.senderId,
         groupId: findGroup.id,
         message: imagePath,
+        status: 'delivered'
       };
       const result = await GroupMessage.create(message);
       if (!result) {
