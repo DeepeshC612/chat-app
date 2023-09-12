@@ -6,6 +6,7 @@ document.addEventListener("DOMContentLoaded", function () {
   let roomName;
   var typing = false;
   let isActive = [];
+  let clickedUser = []
   var online = true;
   var timeout = undefined;
   let count = 0;
@@ -109,8 +110,10 @@ document.addEventListener("DOMContentLoaded", function () {
 
   document.addEventListener("click", function (event) {
     if (event.target && event.target.matches(".user-item")) {
+      clickedUser = []
       const allSpans = event.target.querySelectorAll("span");
       const clickedUserName = allSpans[0].textContent;
+      clickedUser.push({createdBy: userId, toUserId: event.target.dataset.userId})
       if (event.target.dataset.type == "multiple") {
         socket.emit("clicked user", {
           toUserId: event.target.dataset.roomId,
@@ -127,6 +130,7 @@ document.addEventListener("DOMContentLoaded", function () {
           popUp: false,
         });
       }
+
       openChatInterface(clickedUserName);
     }
   });
@@ -201,6 +205,11 @@ document.addEventListener("DOMContentLoaded", function () {
             isActive.forEach((e) => {
               if (e.isActive == true && recipientUserId == e.userId) {
                 msgStatus = "delivered";
+              }
+            });
+            clickedUser.forEach((e)=>{
+              if(e.toUserId == recipientUserId){
+                msgStatus = "seen"
               }
             });
             displaySentMessage(
@@ -483,7 +492,7 @@ document.addEventListener("DOMContentLoaded", function () {
     <div class="blueTickDiv" id="blueTickDiv">
     <p>${message}</p>
     <img src="${
-      status == "sent" ? "/image/check.png" : "/image/read.png"
+      status == "sent" ? "/image/check.png" :  status == "delivered" ? "/image/read.png" : "/image/double-check.png"
     }" id="Read_Recipient" alt="Read_Recipient" style="margin-top:12px; margin-left:5px; height:10px; width:10px">
     </div>
     </div>
@@ -544,4 +553,5 @@ document.addEventListener("DOMContentLoaded", function () {
       chatMessagesDiv.removeChild(chatMessagesDiv.firstChild);
     }
   }
+
 });

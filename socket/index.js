@@ -34,7 +34,7 @@ let socket = (server) => {
             }
           }
           usersList.forEach(async (e) => {
-            let msg = await getRoomMessages({ userId: data.userId, id: e.id, isActive: e.isActive });
+            let msg = await getRoomMessages({ userId: data.userId, id: e.id, isActive: e.isActive, clicked: false });
           });
           socket.userId = data.userId;
           await userOnlineStatus(data.userId, true);
@@ -58,6 +58,7 @@ let socket = (server) => {
         // Save user info to database
         const newGroup = await addNewGroup(userData);
         if (newGroup) {
+          await getRoomMessages({ userId: data.createdBy, id: data.toUserId, isActive: false, clicked: true});
           room.roomName = newGroup;
           socket.join(newGroup);
           // Send user information to the client

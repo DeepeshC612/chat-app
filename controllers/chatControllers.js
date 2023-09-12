@@ -195,7 +195,8 @@ const getRoomMessages = async (data) => {
             ele,
             data.userId,
             data.id,
-            data.isActive
+            data.isActive,
+            data.clicked
           );
           if (findMsg.length) {
             return (result = findMsg);
@@ -213,13 +214,26 @@ const getRoomMessages = async (data) => {
   }
 };
 
-const getResult = async (e, userId, id, isActive) => {
+const getResult = async (e, userId, id, isActive, clicked) => {
   const result = await GroupMessage.findAll({
     where: { groupId: e.id },
   });
   if (!result) {
     throw new Error();
   } else {
+    if (clicked == true) {
+      await GroupMessage.update(
+        { status: "seen" },
+        {
+          where: {
+            [Op.and]: [
+              { groupId: e.id },
+              { userId: { [Op.or]: [userId, id] } },
+            ],
+          },
+        }
+      );
+    }
     if (isActive == true) {
       await GroupMessage.update(
         { status: "delivered" },
