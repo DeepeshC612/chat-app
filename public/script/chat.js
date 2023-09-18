@@ -6,7 +6,6 @@ document.addEventListener("DOMContentLoaded", function () {
   let roomName;
   var typing = false;
   let isActive = [];
-  let clickedUser = []
   var online = true;
   var timeout = undefined;
   let count = 0;
@@ -110,10 +109,8 @@ document.addEventListener("DOMContentLoaded", function () {
 
   document.addEventListener("click", function (event) {
     if (event.target && event.target.matches(".user-item")) {
-      clickedUser = []
       const allSpans = event.target.querySelectorAll("span");
       const clickedUserName = allSpans[0].textContent;
-      clickedUser.push({createdBy: userId, toUserId: event.target.dataset.userId})
       if (event.target.dataset.type == "multiple") {
         socket.emit("clicked user", {
           toUserId: event.target.dataset.roomId,
@@ -130,11 +127,9 @@ document.addEventListener("DOMContentLoaded", function () {
           popUp: false,
         });
       }
-
       openChatInterface(clickedUserName);
     }
   });
-
   document
     .getElementById("chatSendButton")
     .addEventListener("click", function (e) {
@@ -205,11 +200,6 @@ document.addEventListener("DOMContentLoaded", function () {
             isActive.forEach((e) => {
               if (e.isActive == true && recipientUserId == e.userId) {
                 msgStatus = "delivered";
-              }
-            });
-            clickedUser.forEach((e)=>{
-              if(e.toUserId == recipientUserId){
-                msgStatus = "seen"
               }
             });
             displaySentMessage(

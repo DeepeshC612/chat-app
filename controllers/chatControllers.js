@@ -34,11 +34,11 @@ const addNewGroup = async (data) => {
       });
     }
     if (isGroupExists.length) {
-      let roomName;
+      let group
       isGroupExists.forEach((e) => {
-        roomName = e.dataValues.name;
+        group = e.dataValues;
       });
-      return roomName;
+      return group;
     } else {
       if (Array.isArray(data.toUserId)) {
         let newGroup;
@@ -178,7 +178,7 @@ const getMessages = async (data) => {
 };
 const getRoomMessages = async (data) => {
   try {
-    let result = [];
+    let result
     const findGroup = await Group.findAll({
       where: {
         [Op.and]: [
@@ -206,8 +206,6 @@ const getRoomMessages = async (data) => {
       if (result) {
         return result;
       }
-    } else {
-      throw new Error();
     }
   } catch (err) {
     throw new Error(err);
@@ -215,39 +213,30 @@ const getRoomMessages = async (data) => {
 };
 
 const getResult = async (e, userId, id, isActive, clicked) => {
-  const result = await GroupMessage.findAll({
-    where: { groupId: e.id },
-  });
-  if (!result) {
-    throw new Error();
-  } else {
-    if (clicked == true) {
-      await GroupMessage.update(
-        { status: "seen" },
-        {
-          where: {
-            [Op.and]: [
-              { groupId: e.id },
-              { userId: { [Op.or]: [userId, id] } },
-            ],
-          },
-        }
-      );
+  try{
+    const result = await GroupMessage.findAll({
+      where: { groupId: e.id },
+    });
+    if (!result) {
+      throw new Error();
+    } else {
+      if (isActive == true) {
+        await GroupMessage.update(
+          { status: "delivered" },
+          {
+            where: {
+              [Op.and]: [
+                { groupId: e.id },
+                { userId: { [Op.or]: [userId, id] } },
+              ],
+            },
+          }
+        );
+      }
+      return result;
     }
-    if (isActive == true) {
-      await GroupMessage.update(
-        { status: "delivered" },
-        {
-          where: {
-            [Op.and]: [
-              { groupId: e.id },
-              { userId: { [Op.or]: [userId, id] } },
-            ],
-          },
-        }
-      );
-    }
-    return result;
+  } catch (err) {
+    throw new Error(err)
   }
 };
 
