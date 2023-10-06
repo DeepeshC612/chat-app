@@ -24,6 +24,7 @@ document.addEventListener("DOMContentLoaded", function () {
       userItem.className = "user-item";
       userItem.dataset.userId = user.id;
       userItem.dataset.toUserEmail = user.email;
+      
       userItem.style.marginBlock = "5px";
 
       const userInfo = document.createElement("div");
@@ -37,8 +38,15 @@ document.addEventListener("DOMContentLoaded", function () {
       onlineStatus.textContent = user.isActive ? "Online" : "Offline";
       onlineStatus.style.color = user.isActive ? "green" : "gray";
       isActive.push({ userId: user.id, isActive: user.isActive });
-      const profilePic = document.createElement("div");
+      const profilePic = document.createElement("img");
       profilePic.className = "profile-pic";
+      if(user.profilePic.startsWith('/uploads/')){
+        userItem.dataset.profilePic = user.profilePic;
+        profilePic.src = user.profilePic;
+      } else {
+        userItem.dataset.profilePic = "/image/user-icon.jpg";
+        profilePic.src = "/image/user-icon.jpg";
+      }
 
       userInfo.appendChild(userName);
       userInfo.appendChild(onlineStatus);
@@ -63,13 +71,20 @@ document.addEventListener("DOMContentLoaded", function () {
         userItem.className = "user-item";
         userItem.dataset.roomId = user.id;
         userItem.dataset.type = "multiple";
+        userItem.dataset.profilePic = user.groupIcon;
         userItem.dataset.roomName = user.name;
         userItem.style.marginBlock = "5px";
 
         const userInfo = document.createElement("div");
         userInfo.className = "user-info";
-        const profilePic = document.createElement("div");
+        const profilePic = document.createElement("img");
         profilePic.className = "group-profile-pic";
+        profilePic.src = user.groupIcon;
+        // if(user.groupIcon.startsWith('/uploads/')){
+        //   profilePic.src = user.groupIcon;
+        // } else {
+          //profilePic.src = "/image/people.png";
+        // }
         const userName = document.createElement("span");
         userName.textContent = user.name.split("-")[0];
 
@@ -111,6 +126,7 @@ document.addEventListener("DOMContentLoaded", function () {
     if (event.target && event.target.matches(".user-item")) {
       const allSpans = event.target.querySelectorAll("span");
       const clickedUserName = allSpans[0].textContent;
+      const profilePic = event.target.dataset.profilePic;
       if (event.target.dataset.type == "multiple") {
         socket.emit("clicked user", {
           toUserId: event.target.dataset.roomId,
@@ -127,7 +143,7 @@ document.addEventListener("DOMContentLoaded", function () {
           popUp: false,
         });
       }
-      openChatInterface(clickedUserName);
+      openChatInterface(clickedUserName, profilePic);
     }
   });
   document
@@ -141,7 +157,7 @@ document.addEventListener("DOMContentLoaded", function () {
         formData.append("senderId", userId);
         formData.append("roomName", roomName);
         axios
-          .post("http://localhost/chat/upload-image", formData, {
+          .post("http://localhost:8000/chat/upload-image", formData, {
             headers: {
               "Content-Type": "multipart/form-data",
             },
@@ -429,9 +445,16 @@ document.addEventListener("DOMContentLoaded", function () {
   }
 
   // Open the chat interface
-  function openChatInterface(userName) {
+  function openChatInterface(userName, profilePic) {
     clearChatMessages();
     document.getElementById("chatInterface").style.display = "flex";
+    if (profilePic.startsWith("/uploads/")) {
+      const profile = document.querySelector("#profilePic")
+      profile.src = profilePic;
+      // profile.onclick = function() {
+      //   openModal(profilePic)
+      // }
+    }
     document.getElementById("chatHeader").innerText = userName;
     socket.off("send data");
     socket.on("send data", function (data) {
@@ -451,9 +474,29 @@ document.addEventListener("DOMContentLoaded", function () {
     const imageElement = document.createElement("img");
     imageElement.src = image;
     imageElement.className = "sent-image";
+    imageElement.onclick = function () {
+      openModal(image);
+    };
+
     const messageDiv = document.createElement("div");
     messageDiv.className = "message me";
 
+    const modelContainer = document.createElement("div");
+    modelContainer.id = "modal-container";
+    modelContainer.className = "modal-container";
+
+    const span = document.createElement("span");
+    span.className = "closeImageBtn";
+    span.onclick = closeModal;
+    span.textContent = "x";
+
+    const enlargeImage = document.createElement("img");
+    enlargeImage.alt = "Enlarged Image";
+    enlargeImage.id = "enlarged-image";
+
+    modelContainer.appendChild(span);
+    modelContainer.appendChild(enlargeImage);
+    messageDiv.appendChild(modelContainer);
     messageDiv.appendChild(imageElement);
     document.getElementById("chatMessages").appendChild(messageDiv);
     scrollToBottom();
@@ -464,9 +507,29 @@ document.addEventListener("DOMContentLoaded", function () {
     const imageElement = document.createElement("img");
     imageElement.src = image;
     imageElement.className = "receive-image";
+    imageElement.onclick = function () {
+      openModal(image);
+    };
+
     const messageDiv = document.createElement("div");
     messageDiv.className = "message you";
 
+    const modelContainer = document.createElement("div");
+    modelContainer.id = "modal-container";
+    modelContainer.className = "modal-container";
+
+    const span = document.createElement("span");
+    span.className = "closeImageBtn";
+    span.onclick = closeModal;
+    span.textContent = "x";
+
+    const enlargeImage = document.createElement("img");
+    enlargeImage.alt = "Enlarged Image";
+    enlargeImage.id = "enlarged-image";
+
+    modelContainer.appendChild(span);
+    modelContainer.appendChild(enlargeImage);
+    messageDiv.appendChild(modelContainer);
     messageDiv.appendChild(imageElement);
     document.getElementById("chatMessages").appendChild(messageDiv);
     scrollToBottom();
@@ -482,7 +545,11 @@ document.addEventListener("DOMContentLoaded", function () {
     <div class="blueTickDiv" id="blueTickDiv">
     <p>${message}</p>
     <img src="${
-      status == "sent" ? "/image/check.png" :  status == "delivered" ? "/image/read.png" : "/image/double-check.png"
+      status == "sent"
+        ? "/image/check.png"
+        : status == "delivered"
+        ? "/image/read.png"
+        : "/image/double-check.png"
     }" id="Read_Recipient" alt="Read_Recipient" style="margin-top:12px; margin-left:5px; height:10px; width:10px">
     </div>
     </div>
@@ -499,8 +566,8 @@ document.addEventListener("DOMContentLoaded", function () {
     const uniqueElements = [];
     elements.forEach((element) => {
       const elementContent = element.textContent;
-      if(element.innerHTML.startsWith('<img')){
-        uniqueElements.push(element)
+      if (element.innerHTML.startsWith("<img")) {
+        uniqueElements.push(element);
       }
       const isDuplicate = uniqueElements.some((uniqueElement) => {
         return uniqueElement.textContent === elementContent;
@@ -532,6 +599,14 @@ document.addEventListener("DOMContentLoaded", function () {
     document.getElementById("chatMessages").appendChild(messageDiv);
     scrollToBottom();
   }
+  function openModal(image) {
+    const enlargeImage = document.getElementById("enlarged-image");
+    enlargeImage.src = image;
+    document.getElementById("modal-container").style.display = "block";
+  }
+  function closeModal() {
+    document.getElementById("modal-container").style.display = "none";
+  }
   // Scroll to the bottom of the chat messages
   function scrollToBottom() {
     const chatMessagesDiv = document.getElementById("chatMessages");
@@ -543,5 +618,4 @@ document.addEventListener("DOMContentLoaded", function () {
       chatMessagesDiv.removeChild(chatMessagesDiv.firstChild);
     }
   }
-
 });

@@ -11,6 +11,10 @@ module.exports = (sequelize, DataTypes) => {
       type: DataTypes.ENUM('active', 'inactive', 'deleted'),
       defaultValue: 'active'
     },
+    groupIcon: {
+      type: DataTypes.STRING(255),
+      allowNull: true
+    },
     toUserId: {
       type: DataTypes.INTEGER,
     },
