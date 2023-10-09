@@ -9,6 +9,7 @@ document.addEventListener("DOMContentLoaded", function () {
   var online = true;
   var timeout = undefined;
   let count = 0;
+  let senderUser
 
   socket.emit("users", { userId: userId, popUp: false });
   socket.on("user list", function (userList) {
@@ -16,10 +17,20 @@ document.addEventListener("DOMContentLoaded", function () {
   });
 
   function displayUserList(userList) {
+    socket.on("sortUserList", function (data) {
+      senderUser = userList.userList.find((user) => user.id == data.senderId);
+      if(senderUser){
+        displayUserList(userList);
+      }
+    })
     const userListContainer = document.getElementById("userList");
     userListContainer.innerHTML = "";
 
     userList.userList.forEach((user) => {
+      let isSender
+      if(senderUser){
+        isSender = senderUser && user.id === senderUser.id
+      }
       const userItem = document.createElement("div");
       userItem.className = "user-item";
       userItem.dataset.userId = user.id;
@@ -44,16 +55,19 @@ document.addEventListener("DOMContentLoaded", function () {
         userItem.dataset.profilePic = user.profilePic;
         profilePic.src = user.profilePic;
       } else {
-        userItem.dataset.profilePic = "/image/user-icon.jpg";
-        profilePic.src = "/image/user-icon.jpg";
+        userItem.dataset.profilePic = "/image/userIcon.jpg";
+        profilePic.src = "/image/userIcon.jpg";
       }
-
       userInfo.appendChild(userName);
       userInfo.appendChild(onlineStatus);
       userItem.appendChild(profilePic);
       userItem.appendChild(userInfo);
-
-      userListContainer.appendChild(userItem);
+      
+      if(isSender){
+        userListContainer.prepend(userItem)
+      } else {
+        userListContainer.appendChild(userItem);
+      }
     });
     if (userList.groupList) {
       const seen = {};
@@ -449,11 +463,27 @@ document.addEventListener("DOMContentLoaded", function () {
     clearChatMessages();
     document.getElementById("chatInterface").style.display = "flex";
     if (profilePic.startsWith("/uploads/")) {
-      const profile = document.querySelector("#profilePic")
-      profile.src = profilePic;
-      // profile.onclick = function() {
-      //   openModal(profilePic)
-      // }
+      document.querySelector("#profilePic").src = profilePic;
+    } else {
+      document.querySelector("#profilePic").src = profilePic
+    }
+    const newHeader = document.getElementById('newHeader')
+    const imageContainer = document.createElement('div')
+    imageContainer.id = "modal-container-profile"
+    imageContainer.className = "modal-container-profile";
+    const span = document.createElement("span");
+    span.className = "closeProfileImageBtn";
+    span.onclick = closeModal;
+    span.textContent = "x";
+    const enlargeImage = document.createElement("img");
+    enlargeImage.alt = "Enlarged-Image";
+    enlargeImage.id = "enlarged-image-profile";
+    imageContainer.appendChild(span)
+    imageContainer.appendChild(enlargeImage)
+    newHeader.appendChild(imageContainer)
+    const getImage = document.querySelector("#profilePic")
+    getImage.onclick = function() {   
+      openModal(getImage.src)
     }
     document.getElementById("chatHeader").innerText = userName;
     socket.off("send data");
@@ -601,11 +631,24 @@ document.addEventListener("DOMContentLoaded", function () {
   }
   function openModal(image) {
     const enlargeImage = document.getElementById("enlarged-image");
-    enlargeImage.src = image;
-    document.getElementById("modal-container").style.display = "block";
+    if(enlargeImage){
+      enlargeImage.src = image;
+      document.getElementById("modal-container").style.display = "block";
+    } else {
+      const largeImage = document.getElementById('enlarged-image-profile')
+      largeImage.src = image
+      document.getElementById("chatMessages").style.display = "none"
+      document.getElementById("modal-container-profile").style.display = "block"
+    }
   }
   function closeModal() {
-    document.getElementById("modal-container").style.display = "none";
+    const model =  document.getElementById("modal-container")
+    if (model) {
+      model.style.display = "none";
+    } else {
+      document.getElementById("chatMessages").style.display = "block"
+      document.getElementById("modal-container-profile").style.display = "none";
+    }
   }
   // Scroll to the bottom of the chat messages
   function scrollToBottom() {

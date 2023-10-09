@@ -98,6 +98,9 @@ let socket = (server) => {
             socket.emit("sendedMsgImg", res.result.id);
             socket.emit("sendedMsg", res.result);
             // Broadcast the message to everyone in the room
+            io.emit("sortUserList", {
+              senderId: data.senderId,
+            })
             io.to(data.roomName).emit("receive message", {
               message: data.value,
               senderId: data.senderId,
