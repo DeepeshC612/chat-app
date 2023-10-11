@@ -92,6 +92,9 @@ let socket = (server) => {
             message: data.message,
             senderId: data.senderId,
           });
+          io.emit("sortUserListImage", {
+            senderId: data.senderId,
+          })
         } else {
           const res = await saveMessages(data);
           if (res.result) {

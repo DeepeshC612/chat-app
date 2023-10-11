@@ -23,6 +23,12 @@ document.addEventListener("DOMContentLoaded", function () {
         displayUserList(userList);
       }
     })
+    socket.on("sortUserListImage", function (data) {
+      senderUser = userList.userList.find((user) => user.id == data.senderId);
+      if(senderUser){
+        displayUserList(userList);
+      }
+    })
     const userListContainer = document.getElementById("userList");
     userListContainer.innerHTML = "";
 
