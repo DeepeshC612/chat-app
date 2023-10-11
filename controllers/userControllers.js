@@ -20,8 +20,8 @@ const signUp = async (req, res) => {
     } else {
       const salt = await bcrypt.genSalt(10);
       regData.password = await bcrypt.hash(req.body.password, salt);
-      //const filePath = req.file.path;
-      //regData.profilePic = `${filePath}`;
+      const imagePath = "/uploads/" + req.file.filename;
+      regData.profilePic = imagePath
       const userData = await regData.save();
       res.status(201).json({
         success: true,

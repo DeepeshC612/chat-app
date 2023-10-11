@@ -43,12 +43,14 @@
         padding: 10px 18px;
         background-color: rgb(240, 39, 39);
       }
+      .Signup {
+        width: auto;
+        float: right;
+        padding: 10px 18px;
+        background-color: #0d89db;
+      }
       .container {
         padding: 20px;
-      }
-      span.psw {
-        float: right;
-        padding-top: 16px;
       }
       .box {
         width: 400px;
@@ -95,9 +97,7 @@
 
       <div class="container" style="background-color: #f1f1f1">
         <button type="button" class="cancelbtn">Cancel</button>
-        <span class="psw"
-          ><a href="#" style="text-decoration: none">Forgot password?</a></span
-        >
+        <button type="button" class="Signup" onclick="login()">Signup</button>
       </div>
     </div>
     <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
@@ -111,13 +111,13 @@
             password: password,
             userRole: "admin",
           });
-          console.log(res)
+          console.log(res);
           if (res.status == 200) {
-            localStorage.clear()
+            localStorage.clear();
             localStorage.setItem("id", res.data.id);
             localStorage.setItem("name", res.data.name);
             localStorage.setItem("roomName", res.data.roomId);
-           window.location.href = "http://localhost:8000/chat/logged"
+            window.location.href = "http://localhost:8000/chat/logged";
           }
         } catch (error) {
           console.log(error);
