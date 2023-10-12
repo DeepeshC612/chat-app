@@ -136,7 +136,7 @@
             class="custom-input"
             required
           />
-          
+
           <label for="imageInput" class="custom-label"
             ><b>Profile Pic</b></label
           >
@@ -156,32 +156,39 @@
     <script>
       async function signup() {
         try {
-          const formData = new FormData();
           let firstName = document.getElementById("FirstName").value;
           let lastName = document.getElementById("LastName").value;
           let email = document.getElementById("Email").value;
           let password = document.getElementById("password").value;
           let phoneNum = document.getElementById("phoneNum").value;
           let profilePic = document.getElementById("profilePic").files[0];
-          
-          formData.append("FirstName", firstName);
-          formData.append("LastName", lastName);
-          formData.append("Email", email);
+
+          const formData = new FormData();
+          formData.append("firstName", firstName);
+          formData.append("lastName", lastName);
+          formData.append("email", email);
           formData.append("password", password);
           formData.append("phoneNum", phoneNum);
           formData.append("profilePic", profilePic);
-          var res = await axios.post("http://localhost:8000/user/signup", formData, {
-            headers: {
-              "Content-Type": "multipart/form-data",
+          
+          var res = await axios.post(
+            "http://localhost:8000/user/signup",
+            formData,
+            {
+              headers: {
+                "Content-Type": "multipart/form-data",
+              },
             }
-          });
-          console.log(res);
+          );
           if (res.status == 201) {
-            let userName = `${res.data.user.firstName} ${res.data.user.lastName}` 
+            let userName = `${res.data.user.firstName} ${res.data.user.lastName}`;
             localStorage.clear();
             localStorage.setItem("id", res.data.user.id);
             localStorage.setItem("name", userName);
             window.location.href = "http://localhost:8000/chat/logged";
+          }
+          if (res.status == 409) {
+            alert("User already exists");
           }
         } catch (error) {
           console.log(error);

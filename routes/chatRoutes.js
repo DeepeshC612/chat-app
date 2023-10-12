@@ -13,6 +13,12 @@ Router.get(
   }
 );
 Router.get(
+  "/signup",
+  (req, res) =>{
+    res.sendFile(path.resolve('./socket/signup.html'))
+  }
+);
+Router.get(
   "/logged",
   (req, res) =>{
     res.sendFile(path.resolve('./socket/index.html'))
