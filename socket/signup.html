@@ -7,155 +7,194 @@
     <style>
       body {
         font-family: Arial, Helvetica, sans-serif;
+        background-color: #f2f2f2;
         display: flex;
         flex-direction: column;
         justify-content: center;
         align-items: center;
+        height: 100vh;
+        margin: 0;
+        background-image: url("/image/c.jpg");
       }
-      .login {
-        box-sizing: content-box;
+      .login-container {
+        background: #fff;
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        padding: 20px;
+        width: 400px;
         text-align: center;
-        margin-top: 50px;
       }
-      input[type="text"],
-      input[type="password"] {
-        width: 100%;
-        padding: 12px 20px;
-        margin: 8px 0;
-        display: inline-block;
+      .login-title {
+        font-size: 24px;
+        font-weight: bold;
+        margin-bottom: 20px;
+      }
+      .input-group {
+        display: flex;
+        flex-direction: column;
+        margin-bottom: 16px;
+      }
+      .input-group label {
+        font-weight: bold;
+        margin-bottom: 6px;
+      }
+      .input-group input[type="text"],
+      .input-group input[type="password"],
+      .input-group input[type="tel"],
+      .input-group input[type="email"],
+      .input-group input[type="file"] {
+        width: 93%;
+        padding: 12px;
         border: 1px solid #ccc;
-        box-sizing: border-box;
+        border-radius: 4px;
+        font-size: 16px;
       }
-      button {
+      .input-group input[type="file"] {
+        display: none;
+      }
+      .input-group .file-input-label {
         background-color: #0d89db;
         color: white;
-        padding: 14px 20px;
-        margin: 8px 0;
+        padding: 10px 10px;
         border: none;
+        border-radius: 4px;
+        font-size: 14px;
         cursor: pointer;
-        width: 100%;
+        display: inline-flex;
+        width: 31%;
+        transition: background-color 0.3s;
       }
-      button:hover {
-        opacity: 0.8;
+      .input-group .file-input-label span {
+        margin-left: 10px;
+      }
+      .input-group .file-input-label:hover {
+        background-color: #0a6ba9;
+      }
+      .input-group input:focus {
+        border-color: #0d89db;
+        outline: none;
+      }
+      .action-button {
+        background-color: #0d89db;
+        color: #ffffff;
+        padding: 8px 18px;
+        border: none;
+        border-radius: 4px;
+        font-size: 18px;
+        cursor: pointer;
+        display: flex;
+        float: right;
+      }
+      .action-button:hover {
+        background-color: #0a6ba9;
+      }
+      .error-message {
+        margin-top: 2px;
+        color: red;
       }
       .cancelbtn {
-        width: auto;
+        display: flex;
+        float: left;
+        border: none;
+        font-size: 14px;
+        cursor: pointer;
+        color: #ffffff;
+        border-radius: 4px;
         padding: 10px 18px;
         background-color: rgb(240, 39, 39);
       }
-      .Signup {
-        width: auto;
-        float: right;
-        padding: 10px 18px;
-        background-color: #0d89db;
+      .cancelbtn:hover {
+        background-color: rgb(197, 3, 3);
       }
       .container {
         padding: 20px;
       }
-      .box {
-        width: 400px;
-      }
-      .custom-input {
-        width: calc(100% - 24px);
-        padding: 12px;
-        margin-bottom: 8px;
-        display: inline-block;
-        border: 1px solid #ccc;
-        box-sizing: border-box;
-      }
-      .left-section,
-      .right-section {
-        width: 49%; /* Adjust the width as needed */
-        display: inline-block;
-        vertical-align: top;
-        box-sizing: border-box;
-      }
-
-      .clear {
-        clear: both;
-      }
-      .custom-label {
-        font-weight: bold;
-        display: block;
-        margin-bottom: 6px;
-      }
     </style>
   </head>
   <body>
-    <h1 class="login">Signup</h1>
-    <div class="box">
-      <div class="left-section">
-        <div class="container">
-          <label for="fname"><b>First Name</b></label>
-          <input
-            type="text"
-            placeholder="Enter First Name"
-            name="fname"
-            id="FirstName"
-            class="custom-input"
-            required
-          />
-          <label for="email"><b>Email</b></label>
-          <input
-            type="text"
-            placeholder="Enter Email"
-            name="email"
-            id="Email"
-            class="custom-input"
-            required
-          />
-          <label for="tel" class="custom-label"><b>Phone Number</b></label>
-          <input
-            type="tel"
-            placeholder="Enter Phone Number"
-            name="phoneNum"
-            id="phoneNum"
-            class="custom-input"
-            required
-          />
-        </div>
+    <div class="login-container">
+      <h1 class="login-title">Signup</h1>
+      <div class="input-group">
+        <label for="fname"><b>First Name</b></label>
+        <input
+          type="text"
+          placeholder="Enter First Name"
+          name="fname"
+          id="FirstName"
+          required
+        />
+        <div id="firstNameError" class="error-message"></div>
       </div>
-
-      <div class="right-section">
-        <div class="container">
-          <label for="lname"><b>Last Name</b></label>
-          <input
-            type="text"
-            placeholder="Enter Last Name"
-            name="lname"
-            id="LastName"
-            class="custom-input"
-            required
-          />
-          <label for="psw"><b>Password</b></label>
-          <input
-            type="password"
-            placeholder="Enter Password"
-            name="psw"
-            id="password"
-            class="custom-input"
-            required
-          />
-
-          <label for="imageInput" class="custom-label"
-            ><b>Profile Pic</b></label
-          >
-          <input
-            type="file"
-            name="profilePic"
-            id="profilePic"
-            class="custom-input"
-            required
-          />
-        </div>
+      <div class="input-group">
+        <label for="lname"><b>Last Name</b></label>
+        <input
+          type="text"
+          placeholder="Enter Last Name"
+          name="lname"
+          id="LastName"
+          required
+        />
+        <div id="lastNameError" class="error-message"></div>
       </div>
-      <div class="clear"></div>
-      <button onclick="signup()">Register</button>
+      <div class="input-group">
+        <label for="email"><b>Email</b></label>
+        <input
+          type="text"
+          placeholder="Enter Email"
+          name="email"
+          id="Email"
+          required
+        />
+        <div id="emailError" class="error-message"></div>
+      </div>
+      <div class="input-group">
+        <label for="psw"><b>Password</b></label>
+        <input
+          type="password"
+          placeholder="Enter Password"
+          name="psw"
+          id="password"
+          required
+        />
+        <div id="passwordError" class="error-message"></div>
+      </div>
+      <div class="input-group">
+        <label for="tel"><b>Phone Number</b></label>
+        <input
+          type="tel"
+          placeholder="Enter Phone Number"
+          name="phoneNum"
+          id="phoneNum"
+          required
+        />
+        <div id="phoneNumError" class="error-message"></div>
+      </div>
+      <div class="input-group">
+        <label class="file-input-label" for="profilePic"
+          ><b>Choose Profile Pic</b>
+        </label>
+        <input type="file" name="profilePic" id="profilePic" required />
+        <div id="profilePicError" class="error-message"></div>
+      </div>
+      <div>
+        <button type="button" class="cancelbtn" onclick="cancel()">
+          Cancel
+        </button>
+        <button class="action-button" onclick="signup()">Register</button>
+      </div>
     </div>
     <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
     <script>
       async function signup() {
         try {
+          const errorMessages = {
+            firstName: "",
+            lastName: "",
+            email: "",
+            password: "",
+            phoneNum: "",
+            profilePic: "",
+          };
           let firstName = document.getElementById("FirstName").value;
           let lastName = document.getElementById("LastName").value;
           let email = document.getElementById("Email").value;
@@ -163,6 +202,32 @@
           let phoneNum = document.getElementById("phoneNum").value;
           let profilePic = document.getElementById("profilePic").files[0];
 
+          if (!firstName) errorMessages.firstName = "Please provide first name";
+          if (!lastName) errorMessages.lastName = "Please provide last name";
+          if (!email) errorMessages.email = "Please provide email";
+          if (!password) errorMessages.password = "Please provide password";
+          if (!phoneNum) errorMessages.phoneNum = "Please provide phone number";
+          if (!profilePic)
+            errorMessages.profilePic = "Please provide a profile picture";
+
+          document.getElementById("firstNameError").innerText =
+            errorMessages.firstName;
+          document.getElementById("lastNameError").innerText =
+            errorMessages.lastName;
+          document.getElementById("emailError").innerText = errorMessages.email;
+          document.getElementById("passwordError").innerText =
+            errorMessages.password;
+          document.getElementById("phoneNumError").innerText =
+            errorMessages.phoneNum;
+          document.getElementById("profilePicError").innerText =
+            errorMessages.profilePic;
+
+          const hasErrors = Object.values(errorMessages).some(
+            (message) => message !== ""
+          );
+          if (hasErrors) {
+            return;
+          }
           const formData = new FormData();
           formData.append("firstName", firstName);
           formData.append("lastName", lastName);
@@ -170,7 +235,7 @@
           formData.append("password", password);
           formData.append("phoneNum", phoneNum);
           formData.append("profilePic", profilePic);
-          
+
           var res = await axios.post(
             "http://localhost:8000/user/signup",
             formData,
@@ -196,6 +261,9 @@
             alert("Internal server error");
           }
         }
+      }
+      async function cancel() {
+        window.location.href = "http://localhost:8000/chat";
       }
     </script>
   </body>

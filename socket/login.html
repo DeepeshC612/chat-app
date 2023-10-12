@@ -7,15 +7,23 @@
     <style>
       body {
         font-family: Arial, Helvetica, sans-serif;
+        background-color: #f2f2f2;
         display: flex;
         flex-direction: column;
         justify-content: center;
         align-items: center;
+        height: 90vh;
+        margin: 0;
+        background-image: url("/image/c.jpg"); 
       }
-      .login {
-        box-sizing: content-box;
+      .login-container {
+        background: #fff;
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        padding: 20px;
+        width: 400px;
         text-align: center;
-        margin-top: 50px;
+        align-items: center;
       }
       input[type="text"],
       input[type="password"] {
@@ -40,8 +48,14 @@
       }
       .cancelbtn {
         width: auto;
+        display: flex;
+        float: left;
         padding: 10px 18px;
         background-color: rgb(240, 39, 39);
+      }
+      .error-message {
+        margin-bottom: 4px;
+        color: red;
       }
       .Signup {
         width: auto;
@@ -55,18 +69,10 @@
       .box {
         width: 400px;
       }
-      @media screen and (max-width: 300px) {
-        span.psw {
-          display: block;
-          float: none;
-        }
-        .cancelbtn {
-          width: 100%;
-        }
-      }
     </style>
   </head>
   <body>
+    <div class="login-container">
     <h1 class="login">Login</h1>
     <div class="box">
       <div class="container">
@@ -78,6 +84,7 @@
           id="username"
           required
         />
+        <div id="firstNameError" class="error-message"></div>
 
         <label for="psw"><b>Password</b></label>
         <input
@@ -87,6 +94,7 @@
           id="password"
           required
         />
+        <div id="passwordError" class="error-message"></div>
 
         <button onclick="login()">Login</button>
         <label>
@@ -95,17 +103,34 @@
         </label>
       </div>
 
-      <div class="container" style="background-color: #f1f1f1">
-        <button type="button" class="cancelbtn">Cancel</button>
-        <button type="button" class="Signup" onclick="login()">Signup</button>
+      <div class="container">
+        <button type="button" class="cancelbtn" onclick="cancel()">Cancel</button>
+        <button type="button" class="Signup" onclick="signup()">Signup</button>
       </div>
     </div>
+  </div>
     <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
     <script>
       async function login() {
         try {
+          const errorMessages = {
+            userName: "",
+            password: "",
+          };
           let userName = document.getElementById("username").value;
           let password = document.getElementById("password").value;
+
+          if (!userName) errorMessages.userName = "Please provide username";
+          if (!password) errorMessages.password = "Please provide password";
+          document.getElementById("firstNameError").innerText = errorMessages.userName;
+          document.getElementById("passwordError").innerText = errorMessages.password;
+
+          const hasErrors = Object.values(errorMessages).some(
+            (message) => message !== ""
+          );
+          if (hasErrors) {
+            return;
+          }
           var res = await axios.post("http://localhost:8000/user/login", {
             email: userName,
             password: password,
@@ -122,9 +147,15 @@
         } catch (error) {
           console.log(error);
           if (error.response.status == 500) {
-            alert("sahi dal le la#@de");
+            alert("wrong details");
           }
         }
+      }
+      async function cancel() {
+       alert("Please provide all details")
+      }
+      async function signup() {
+        window.location.href = "http://localhost:8000/chat/signup";
       }
     </script>
   </body>
